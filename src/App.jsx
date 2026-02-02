@@ -6,6 +6,11 @@ import MainLayout from './layouts/MainLayout';
 // Pages
 import Login from './pages/auth/Login';
 import ProjectList from './pages/projects/ProjectList';
+import ProjectCreate from './pages/projects/ProjectCreate';
+import ProjectEdit from './pages/projects/ProjectEdit';
+import ProjectDetail from './pages/projects/ProjectDetail';
+import AdminDashboard from './pages/dashboard/AdminDashboard';
+import CrewDashboard from './pages/dashboard/CrewDashboard';
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles = [] }) {
@@ -59,7 +64,39 @@ function PublicRoute({ children }) {
 function DashboardRouter() {
   const { user } = useAuth();
 
-  // For now, simple placeholder
+  // Route to appropriate dashboard based on role
+  if (user?.role === 'admin' || user?.role === 'producer') {
+    return <AdminDashboard />;
+  }
+
+  if (user?.role === 'crew') {
+    return <CrewDashboard />;
+  }
+
+  if (user?.role === 'broadcaster') {
+    // TODO: Create BroadcasterDashboard
+    return (
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Broadcaster Dashboard</h1>
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <p className="text-gray-600">Broadcaster dashboard coming soon...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user?.role === 'investor') {
+    // TODO: Create InvestorDashboard
+    return (
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Investor Dashboard</h1>
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+          <p className="text-gray-600">Investor dashboard coming soon...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
@@ -131,6 +168,30 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin', 'producer']}>
                   <ProjectList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="projects/create"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                  <ProjectCreate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="projects/:id"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                  <ProjectDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="projects/:id/edit"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                  <ProjectEdit />
                 </ProtectedRoute>
               }
             />
