@@ -11,6 +11,9 @@ import ProjectEdit from './pages/projects/ProjectEdit';
 import ProjectDetail from './pages/projects/ProjectDetail';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import CrewDashboard from './pages/dashboard/CrewDashboard';
+import FinanceList from './pages/finance/FinanceList';
+import FinanceCreate from './pages/finance/FinanceCreate';
+import PayrollManagement from './pages/finance/PayrollManagement';
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles = [] }) {
@@ -192,6 +195,30 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin', 'producer']}>
                   <ProjectEdit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="finance"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                  <FinanceList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="finance/create"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                  <FinanceCreate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="finance/payroll"
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                  <PayrollManagement />
                 </ProtectedRoute>
               }
             />
