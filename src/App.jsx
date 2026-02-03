@@ -14,6 +14,9 @@ import CrewDashboard from './pages/dashboard/CrewDashboard';
 import FinanceList from './pages/finance/FinanceList';
 import FinanceCreate from './pages/finance/FinanceCreate';
 import PayrollManagement from './pages/finance/PayrollManagement';
+import BroadcasterDashboard from './pages/dashboard/BroadcasterDashboard';
+import InvestorDashboard from './pages/dashboard/InvestorDashboard';
+import UserManagement from './pages/users/UserManagement';
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles = [] }) {
@@ -77,27 +80,11 @@ function DashboardRouter() {
   }
 
   if (user?.role === 'broadcaster') {
-    // TODO: Create BroadcasterDashboard
-    return (
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Broadcaster Dashboard</h1>
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-          <p className="text-gray-600">Broadcaster dashboard coming soon...</p>
-        </div>
-      </div>
-    );
+    return <BroadcasterDashboard />;
   }
 
   if (user?.role === 'investor') {
-    // TODO: Create InvestorDashboard
-    return (
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Investor Dashboard</h1>
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-          <p className="text-gray-600">Investor dashboard coming soon...</p>
-        </div>
-      </div>
-    );
+    return <InvestorDashboard />;
   }
 
   return (
@@ -198,6 +185,16 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="users"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="finance"
               element={
