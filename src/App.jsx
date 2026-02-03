@@ -14,8 +14,8 @@ import CrewDashboard from './pages/dashboard/CrewDashboard';
 import FinanceList from './pages/finance/FinanceList';
 import FinanceCreate from './pages/finance/FinanceCreate';
 import PayrollManagement from './pages/finance/PayrollManagement';
-import BroadcasterDashboard from './pages/dashboard/BroadcasterDashboard';
-import InvestorDashboard from './pages/dashboard/InvestorDashboard';
+// import BroadcasterDashboard from './pages/dashboard/BroadcasterDashboard';
+// import InvestorDashboard from './pages/dashboard/InvestorDashboard';
 import UserManagement from './pages/users/UserManagement';
 
 // Protected Route Component
@@ -79,13 +79,13 @@ function DashboardRouter() {
     return <CrewDashboard />;
   }
 
-  if (user?.role === 'broadcaster') {
-    return <BroadcasterDashboard />;
-  }
+  // if (user?.role === 'broadcaster') {
+  //   return <BroadcasterDashboard />;
+  // }
 
-  if (user?.role === 'investor') {
-    return <InvestorDashboard />;
-  }
+  // if (user?.role === 'investor') {
+  //   return <InvestorDashboard />;
+  // }
 
   return (
     <div className="max-w-7xl mx-auto">
