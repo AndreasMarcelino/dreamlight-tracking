@@ -1,9 +1,21 @@
+/* ========================================
+   IMPORTS - ORDER MATTERS!
+   ======================================== */
+
+/* 1. Font Awesome - FIRST! */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+/* 2. Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* 3. Tailwind - LAST! */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+/* ========================================
+   CUSTOM STYLES
+   ======================================== */
 
 body {
   font-family: 'Poppins', sans-serif;
@@ -53,3 +65,26 @@ body {
 .swal2-popup {
   font-family: 'Poppins', sans-serif !important;
 }
+
+/* ========================================
+   FONT AWESOME FIX
+   ======================================== */
+
+/* Ensure Font Awesome displays correctly with Tailwind */
+.fa, .fas, .far, .fal, .fad, .fab {
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+}
+
+/* Icon size utilities */
+.icon-xs { font-size: 0.75rem; }
+.icon-sm { font-size: 0.875rem; }
+.icon-base { font-size: 1rem; }
+.icon-lg { font-size: 1.25rem; }
+.icon-xl { font-size: 1.5rem; }
+.icon-2xl { font-size: 2rem; }
+.icon-3xl { font-size: 3rem; }
