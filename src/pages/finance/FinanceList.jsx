@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { formatRupiah, formatDateShort, getStatusColor } from '../../utils/formatters';
 import toast from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
 export default function FinanceList() {
+  const navigate = useNavigate();
   const [finances, setFinances] = useState([]);
   const [summary, setSummary] = useState({});
   const [filters, setFilters] = useState({
@@ -35,6 +37,52 @@ export default function FinanceList() {
     }
   };
 
+  // ✅ FIX: Add edit handler
+  const handleEdit = (financeId) => {
+    // Navigate to edit page or open modal
+    navigate(`/finance/edit/${financeId}`);
+  };
+
+  // ✅ FIX: Add delete handler
+  const handleDelete = async (financeId, category) => {
+    const result = await Swal.fire({
+      title: 'Delete Transaction?',
+      html: `Are you sure you want to delete <strong>${category}</strong>?<br>This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#d1d5db',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/finance/${financeId}`);
+        toast.success('Transaction deleted successfully');
+        fetchFinances(); // Refresh list
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to delete transaction');
+      }
+    }
+  };
+
+  // ✅ FIX: Add view details handler
+  const handleViewDetails = (financeId) => {
+    navigate(`/finance/${financeId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-emerald-600 mb-4"></i>
+          <p className="text-gray-500">Loading finance data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Hero Header */}
@@ -47,18 +95,18 @@ export default function FinanceList() {
                 </div>
                 <div className="flex gap-3">
                     <Link
-                    to="/finance/payroll"
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
+                      to="/finance/payroll"
+                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
                     >
-                    <i className="fa-solid fa-users"></i>
-                    Payroll
+                      <i className="fa-solid fa-users"></i>
+                      Payroll
                     </Link>
                     <Link
-                    to="/finance/create"
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
+                      to="/finance/create"
+                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
                     >
-                    <i className="fa-solid fa-plus"></i>
-                    New Transaction
+                      <i className="fa-solid fa-plus"></i>
+                      New Transaction
                     </Link>
                 </div>
             </div>
@@ -162,48 +210,81 @@ export default function FinanceList() {
                 <th className="px-6 py-4 font-semibold">Type</th>
                 <th className="px-6 py-4 font-semibold">Amount</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold">Actions</th>
+                <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 text-sm text-gray-600">
-              {finances.map((finance) => (
-                <tr key={finance.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {formatDateShort(finance.transaction_date)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link
-                      to={`/projects/${finance.project_id}`}
-                      className="text-emerald-600 hover:underline font-semibold"
-                    >
-                      {finance.project?.title}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4">{finance.category}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      finance.type === 'Income' 
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      {finance.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 font-semibold">
-                    {formatRupiah(finance.amount)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(finance.status)}`}>
-                      {finance.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <button className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition">
-                      <i className="fa-solid fa-ellipsis-vertical"></i>
-                    </button>
+              {finances.length > 0 ? (
+                finances.map((finance) => (
+                  <tr key={finance.id} className="hover:bg-gray-50 transition">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {formatDateShort(finance.transaction_date)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        to={`/projects/${finance.project_id}`}
+                        className="text-emerald-600 hover:underline font-semibold"
+                      >
+                        {finance.project?.title}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4">{finance.category}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        finance.type === 'Income' 
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {finance.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-semibold">
+                      {formatRupiah(finance.amount)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(finance.status)}`}>
+                        {finance.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {/* ✅ FIX: Working Action Buttons */}
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleViewDetails(finance.id)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                          title="View Details"
+                        >
+                          <i className="fa-solid fa-eye"></i>
+                        </button>
+                        <button 
+                          onClick={() => handleEdit(finance.id)}
+                          className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                          title="Edit"
+                        >
+                          <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(finance.id, finance.category)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                          title="Delete"
+                        >
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center text-gray-400">
+                      <i className="fa-solid fa-receipt text-4xl mb-3 opacity-30"></i>
+                      <p className="text-lg mb-2">No transactions found</p>
+                      <p className="text-sm">Try adjusting your filters or create a new transaction</p>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

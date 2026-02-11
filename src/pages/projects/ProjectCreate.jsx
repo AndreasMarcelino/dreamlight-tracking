@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { projectService } from '../../services/projectService';
 import { formatNumberInput, parseNumberInput } from '../../utils/formatters';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 export default function ProjectCreate() {
@@ -11,6 +12,7 @@ export default function ProjectCreate() {
   const [loading, setLoading] = useState(false);
   const [broadcasters, setBroadcasters] = useState([]);
   const [investors, setInvestors] = useState([]);
+  const [producers, setProducers] = useState([]); // ✨ NEW
 
   // Watch for formatted inputs
   const budgetDisplay = watch('budget_display');
@@ -36,16 +38,21 @@ export default function ProjectCreate() {
   }, [incomeDisplay, setValue]);
 
   const fetchUsers = async () => {
-    // TODO: Implement user service to fetch broadcasters and investors
-    // For now using mock data
-    setBroadcasters([
-      { id: 1, name: 'TV Nasional' },
-      { id: 2, name: 'Streaming Platform' },
-    ]);
-    setInvestors([
-      { id: 1, name: 'Capital Ventures' },
-      { id: 2, name: 'Media Fund' },
-    ]);
+    try {
+      // ✨ NEW: Fetch all users to get producers, broadcasters, investors
+      const response = await api.get('/auth/users');
+      const users = response.data.data;
+
+      setBroadcasters(users.filter(u => u.role === 'broadcaster'));
+      setInvestors(users.filter(u => u.role === 'investor'));
+      setProducers(users.filter(u => u.role === 'producer')); // ✨ NEW
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      // Fallback to empty arrays
+      setBroadcasters([]);
+      setInvestors([]);
+      setProducers([]);
+    }
   };
 
   const onSubmit = async (data) => {
@@ -55,6 +62,7 @@ export default function ProjectCreate() {
         title: data.title,
         client_id: data.client_id || null,
         investor_id: data.investor_id || null,
+        producer_id: data.producer_id || null, // ✨ NEW
         type: data.type,
         total_budget_plan: data.total_budget_plan,
         target_income: data.target_income,
@@ -144,7 +152,7 @@ export default function ProjectCreate() {
               </div>
 
               {/* Project Type */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {['Movie', 'Series', 'TVC', 'Event'].map((type) => (
                   <label
                     key={type}
@@ -178,6 +186,39 @@ export default function ProjectCreate() {
                   {errors.type.message}
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* ✨ NEW: Producer & Team Section */}
+          <div className="border-t pt-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+              <i className="fa-solid fa-users-gear text-indigo-600"></i>
+              Producer & Team
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">Assign producer yang akan mengelola project ini</p>
+
+            <div className="grid grid-cols-1 gap-6">
+              {/* Producer Selection */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Project Producer
+                </label>
+                <select
+                  {...register('producer_id')}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                >
+                  <option value="">No Producer Assigned</option>
+                  {producers.map((producer) => (
+                    <option key={producer.id} value={producer.id}>
+                      {producer.name} ({producer.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-xs text-gray-500">
+                  <i className="fa-solid fa-circle-info mr-1"></i>
+                  Producer dapat manage tasks, approve submissions, dan pay crew
+                </p>
+              </div>
             </div>
           </div>
 

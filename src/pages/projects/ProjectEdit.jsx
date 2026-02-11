@@ -17,6 +17,8 @@ export default function ProjectEdit() {
   const budgetDisplay = watch('budget_display');
   const incomeDisplay = watch('income_display');
 
+  
+
   useEffect(() => {
     fetchData();
   }, [id]);
@@ -68,16 +70,17 @@ export default function ProjectEdit() {
   };
 
   const fetchUsers = async () => {
-    // TODO: Implement user service
-    setBroadcasters([
-      { id: 1, name: 'TV Nasional' },
-      { id: 2, name: 'Streaming Platform' },
-    ]);
-    setInvestors([
-      { id: 1, name: 'Capital Ventures' },
-      { id: 2, name: 'Media Fund' },
-    ]);
-  };
+  try {
+    const response = await api.get('/auth/users');
+    const users = response.data.data;
+    
+    setBroadcasters(users.filter(u => u.role === 'broadcaster'));
+    setInvestors(users.filter(u => u.role === 'investor'));
+    setProducers(users.filter(u => u.role === 'producer')); // ✨ ADD
+  } catch (error) {
+    console.error('Failed to fetch users:', error);
+  }
+};
 
   const onSubmit = async (data) => {
     setLoading(true);
