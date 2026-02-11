@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
+import logo from "../../assets/logohitam.png";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -50,10 +51,14 @@ export default function Login() {
         <div className="bg-white rounded-[2rem] shadow-xl border border-white/50 p-8 sm:p-10 backdrop-blur-sm">
           {/* Logo Section */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-ocean-500 text-white mb-4 shadow-lg shadow-ocean-200 transform transition hover:scale-110">
-              <i className="fa-solid fa-film text-3xl"></i>
+            <div className="inline-flex items-center justify-center mb-4">
+              <img
+                src={logo}
+                alt="Dreamlight Logo"
+                className="w-76 h-20 object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
+            <h1 className="text-xl font-bold text-gray-800 tracking-tight">
               Welcome Back!
             </h1>
             <p className="text-sm text-gray-500 mt-2">

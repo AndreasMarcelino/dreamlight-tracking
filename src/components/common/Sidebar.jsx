@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Swal from "sweetalert2";
+import logo from "../../assets/logohitam.png";
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
@@ -47,12 +48,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         {/* Header Sidebar */}
         <div className="h-24 flex items-center justify-between px-8">
           <div className="flex items-center gap-3">
-            <div className="bg-ocean-500 p-2 rounded-lg">
-              <i className="fa-solid fa-film text-white text-xl"></i>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-800 tracking-wide">
-              Dreamlight
-            </h1>
+            <img
+              src={logo}
+              alt="Dreamlight Logo"
+              className="w-70 h-20 object-contain"
+            />
           </div>
 
           {/* Close Button (Mobile Only) */}
