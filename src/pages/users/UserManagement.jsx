@@ -1,29 +1,45 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import api from '../../services/api';
-import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import api from "../../services/api";
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
+
+  useEffect(() => {
+    setPage(1); // Reset page when search or filter changes
+  }, [searchTerm, filterRole]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, searchTerm, filterRole]);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
-      // Note: Need to create GET /api/users endpoint in backend
-      const response = await api.get('/auth/users'); // Fallback endpoint
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("limit", limit);
+      if (searchTerm) params.append("search", searchTerm);
+      if (filterRole) params.append("role", filterRole);
+
+      const response = await api.get(`/auth/users?${params}`);
       setUsers(response.data.data || []);
+      setTotalPages(response.data.totalPages || 1);
+      setTotal(response.data.total || 0);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
-      toast.error('Failed to load users');
+      console.error("Failed to fetch users:", error);
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -36,61 +52,54 @@ export default function UserManagement() {
 
   const handleDelete = async (userId, userName) => {
     const result = await Swal.fire({
-      title: 'Delete User?',
+      title: "Delete User?",
       html: `Are you sure you want to delete <strong>${userName}</strong>?<br>This action cannot be undone.`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#d1d5db',
-      confirmButtonText: 'Yes, Delete',
-      cancelButtonText: 'Cancel',
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#d1d5db",
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       try {
         await api.delete(`/auth/users/${userId}`);
-        toast.success('User deleted successfully');
+        toast.success("User deleted successfully");
         fetchUsers();
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to delete user');
+        toast.error(error.response?.data?.message || "Failed to delete user");
       }
     }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = !filterRole || user.role === filterRole;
-    return matchesSearch && matchesRole;
-  });
-
   const getRoleBadge = (role) => {
     const colors = {
-      admin: 'bg-red-100 text-red-700',
-      producer: 'bg-purple-100 text-purple-700',
-      crew: 'bg-blue-100 text-blue-700',
-      broadcaster: 'bg-orange-100 text-orange-700',
-      investor: 'bg-emerald-100 text-emerald-700',
+      admin: "bg-red-100 text-red-700",
+      producer: "bg-sky-100 text-ocean-600",
+      crew: "bg-blue-100 text-blue-700",
+      broadcaster: "bg-orange-100 text-orange-700",
+      investor: "bg-emerald-100 text-emerald-700",
     };
-    return colors[role] || 'bg-gray-100 text-gray-700';
+    return colors[role] || "bg-gray-100 text-gray-700";
   };
 
   const getRoleIcon = (role) => {
     const icons = {
-      admin: 'fa-user-shield',
-      producer: 'fa-film',
-      crew: 'fa-users',
-      broadcaster: 'fa-tower-broadcast',
-      investor: 'fa-sack-dollar',
+      admin: "fa-user-shield",
+      producer: "fa-film",
+      crew: "fa-users",
+      broadcaster: "fa-tower-broadcast",
+      investor: "fa-sack-dollar",
     };
-    return icons[role] || 'fa-user';
+    return icons[role] || "fa-user";
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4"></i>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-ocean-500 mb-4"></i>
           <p className="text-gray-500">Loading users...</p>
         </div>
       </div>
@@ -100,16 +109,18 @@ export default function UserManagement() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 rounded-3xl p-8 shadow-2xl">
+      <div className="relative overflow-hidden bg-gradient-to-br from-ocean-500 via-ocean-600 to-ocean-700 rounded-3xl p-8 shadow-2xl">
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                 User Management 👥
               </h1>
-              <p className="text-blue-100">Manage system users and access control</p>
+              <p className="text-blue-100">
+                Manage system users and access control
+              </p>
             </div>
-            
+
             <button
               onClick={() => {
                 setEditingUser(null);
@@ -124,24 +135,33 @@ export default function UserManagement() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
-            {['admin', 'producer', 'crew', 'broadcaster', 'investor'].map((role) => {
-              const count = users.filter(u => u.role === role).length;
-              return (
-                <div key={role} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <i className={`fa-solid ${getRoleIcon(role)} text-white/70 text-sm`}></i>
-                    <p className="text-white/70 text-xs font-semibold uppercase">{role}</p>
+            {["admin", "producer", "crew", "broadcaster", "investor"].map(
+              (role) => {
+                const count = users.filter((u) => u.role === role).length;
+                return (
+                  <div
+                    key={role}
+                    className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <i
+                        className={`fa-solid ${getRoleIcon(role)} text-white/70 text-sm`}
+                      ></i>
+                      <p className="text-white/70 text-xs font-semibold uppercase">
+                        {role}
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold text-white">{count}</p>
                   </div>
-                  <p className="text-2xl font-bold text-white">{count}</p>
-                </div>
-              );
-            })}
+                );
+              },
+            )}
           </div>
         </div>
 
         {/* Decorative */}
         <div className="absolute -right-40 -top-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -left-40 -bottom-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -left-40 -bottom-40 w-96 h-96 bg-ocean-400/10 rounded-full blur-3xl"></div>
       </div>
 
       {/* Filters */}
@@ -161,7 +181,7 @@ export default function UserManagement() {
               />
             </div>
           </div>
-          
+
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
@@ -191,31 +211,38 @@ export default function UserManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 transition group">
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-gray-50 transition group"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
-                          {user.name?.substring(0, 2).toUpperCase() || '??'}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-ocean-400 to-ocean-600 flex items-center justify-center text-white font-bold">
+                          {user.name?.substring(0, 2).toUpperCase() || "??"}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-800">{user.name}</p>
+                          <p className="font-semibold text-gray-800">
+                            {user.name}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600">{user.email}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleBadge(user.role)} flex items-center gap-1 w-fit`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleBadge(user.role)} flex items-center gap-1 w-fit`}
+                      >
                         <i className={`fa-solid ${getRoleIcon(user.role)}`}></i>
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(user.created_at).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
+                      {new Date(user.created_at).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
                       })}
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -251,6 +278,57 @@ export default function UserManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              Showing {(page - 1) * limit + 1} - {Math.min(page * limit, total)}{" "}
+              of {total} users
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+              >
+                <i className="fa-solid fa-chevron-left text-sm"></i>
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className={`w-10 h-10 rounded-lg font-semibold transition ${
+                      page === pageNum
+                        ? "bg-ocean-500 text-white"
+                        : "border border-gray-200 hover:bg-gray-50 text-gray-600"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+              >
+                <i className="fa-solid fa-chevron-right text-sm"></i>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* User Modal */}
@@ -271,7 +349,12 @@ export default function UserManagement() {
 
 // User Modal Component
 function UserModal({ isOpen, onClose, user, onSuccess }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -284,10 +367,10 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
       });
     } else {
       reset({
-        name: '',
-        email: '',
-        password: '',
-        role: 'crew',
+        name: "",
+        email: "",
+        password: "",
+        role: "crew",
       });
     }
   }, [user, reset]);
@@ -298,18 +381,18 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
       if (user) {
         // Update user
         await api.put(`/auth/users/${user.id}`, data);
-        toast.success('User updated successfully!');
+        toast.success("User updated successfully!");
       } else {
         // Create user
-        await api.post('/auth/register', data);
-        toast.success('User created successfully!');
+        await api.post("/auth/register", data);
+        toast.success("User created successfully!");
       }
 
       onSuccess();
       onClose();
       reset();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save user');
+      toast.error(error.response?.data?.message || "Failed to save user");
     } finally {
       setLoading(false);
     }
@@ -319,16 +402,19 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      ></div>
 
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md">
           {/* Header */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-600 p-6 rounded-t-3xl">
+          <div className="relative overflow-hidden bg-gradient-to-br from-ocean-500 to-ocean-600 p-6 rounded-t-3xl">
             <div className="relative z-10 flex items-center justify-between">
               <div>
                 <h3 className="text-2xl font-bold text-white">
-                  {user ? 'Edit User' : 'Add New User'}
+                  {user ? "Edit User" : "Add New User"}
                 </h3>
                 <p className="text-blue-100 text-sm">User account details</p>
               </div>
@@ -350,11 +436,15 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
               </label>
               <input
                 type="text"
-                {...register('name', { required: 'Name is required' })}
+                {...register("name", { required: "Name is required" })}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition"
                 placeholder="John Doe"
               />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -363,11 +453,15 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
               </label>
               <input
                 type="email"
-                {...register('email', { required: 'Email is required' })}
+                {...register("email", { required: "Email is required" })}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition"
                 placeholder="john@example.com"
               />
-              {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             {!user && (
@@ -377,10 +471,10 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    {...register('password', { 
-                      required: !user && 'Password is required',
-                      minLength: { value: 6, message: 'Min 6 characters' }
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", {
+                      required: !user && "Password is required",
+                      minLength: { value: 6, message: "Min 6 characters" },
                     })}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition"
                     placeholder="••••••••"
@@ -390,10 +484,16 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                   >
-                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                    <i
+                      className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"}`}
+                    ></i>
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
             )}
 
@@ -402,7 +502,7 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
                 Role <span className="text-red-500">*</span>
               </label>
               <select
-                {...register('role', { required: 'Role is required' })}
+                {...register("role", { required: "Role is required" })}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition"
               >
                 <option value="crew">Crew</option>
@@ -424,7 +524,7 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="flex-1 bg-gradient-to-r from-ocean-500 to-ocean-600 hover:from-ocean-600 hover:to-ocean-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-ocean-200 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -432,7 +532,7 @@ function UserModal({ isOpen, onClose, user, onSuccess }) {
                     Saving...
                   </span>
                 ) : (
-                  <>{user ? 'Update' : 'Create'} User</>
+                  <>{user ? "Update" : "Create"} User</>
                 )}
               </button>
             </div>

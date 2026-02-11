@@ -30,18 +30,25 @@ export default function MilestoneAssignModal({
     if (isOpen) {
       fetchData();
     }
-  }, [isOpen]);
+  }, [isOpen, projectId]);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (milestone) {
-      reset({
-        user_id: milestone.user_id,
-        episode_id: milestone.episode_id || "",
-        task_name: milestone.task_name,
-        phase_category: milestone.phase_category,
-        honor_display: formatNumberInput(milestone.honor_amount.toString()),
-        honor_amount: milestone.honor_amount,
-      });
+      // Use setTimeout to ensure the form is ready
+      setTimeout(() => {
+        // Convert to integer first to handle decimal values from database (e.g., 10000.00)
+        const honorValue = Math.round(Number(milestone.honor_amount) || 0);
+        reset({
+          user_id: milestone.user_id,
+          episode_id: milestone.episode_id || "",
+          task_name: milestone.task_name,
+          phase_category: milestone.phase_category,
+          honor_display: formatNumberInput(honorValue.toString()),
+          honor_amount: honorValue,
+        });
+      }, 0);
     } else {
       reset({
         user_id: "",
@@ -52,7 +59,7 @@ export default function MilestoneAssignModal({
         honor_amount: 0,
       });
     }
-  }, [milestone, reset]);
+  }, [isOpen, milestone, reset]);
 
   useEffect(() => {
     if (honorDisplay) {

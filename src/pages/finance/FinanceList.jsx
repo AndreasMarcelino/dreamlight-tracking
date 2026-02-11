@@ -1,37 +1,54 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
-import { formatRupiah, formatDateShort, getStatusColor } from '../../utils/formatters';
-import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import {
+  formatRupiah,
+  formatDateShort,
+  getStatusColor,
+} from "../../utils/formatters";
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export default function FinanceList() {
   const navigate = useNavigate();
   const [finances, setFinances] = useState([]);
   const [summary, setSummary] = useState({});
   const [filters, setFilters] = useState({
-    type: '',
-    status: '',
-    month: ''
+    type: "",
+    status: "",
+    month: "",
   });
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
+
+  useEffect(() => {
+    setPage(1); // Reset page when filters change
+  }, [filters]);
 
   useEffect(() => {
     fetchFinances();
-  }, [filters]);
+  }, [filters, page]);
 
   const fetchFinances = async () => {
+    setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (filters.type) params.append('type', filters.type);
-      if (filters.status) params.append('status', filters.status);
-      if (filters.month) params.append('month', filters.month);
+      if (filters.type) params.append("type", filters.type);
+      if (filters.status) params.append("status", filters.status);
+      if (filters.month) params.append("month", filters.month);
+      params.append("page", page);
+      params.append("limit", limit);
 
       const response = await api.get(`/finance?${params}`);
-      setFinances(response.data.data);
-      setSummary(response.data.summary);
+      setFinances(response.data.data || []);
+      setSummary(response.data.summary || {});
+      setTotalPages(response.data.totalPages || 1);
+      setTotal(response.data.total || 0);
     } catch (error) {
-      toast.error('Failed to load finance data');
+      toast.error("Failed to load finance data");
     } finally {
       setLoading(false);
     }
@@ -46,23 +63,25 @@ export default function FinanceList() {
   // ✅ FIX: Add delete handler
   const handleDelete = async (financeId, category) => {
     const result = await Swal.fire({
-      title: 'Delete Transaction?',
+      title: "Delete Transaction?",
       html: `Are you sure you want to delete <strong>${category}</strong>?<br>This action cannot be undone.`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#d1d5db',
-      confirmButtonText: 'Yes, Delete',
-      cancelButtonText: 'Cancel',
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#d1d5db",
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       try {
         await api.delete(`/finance/${financeId}`);
-        toast.success('Transaction deleted successfully');
+        toast.success("Transaction deleted successfully");
         fetchFinances(); // Refresh list
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to delete transaction');
+        toast.error(
+          error.response?.data?.message || "Failed to delete transaction",
+        );
       }
     }
   };
@@ -88,28 +107,32 @@ export default function FinanceList() {
       {/* Hero Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 rounded-3xl p-8 shadow-2xl">
         <div className="relative z-10">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Finance & Payroll</h1>
-                    <p className="text-emerald-100">Manage budgets and crew payments</p>
-                </div>
-                <div className="flex gap-3">
-                    <Link
-                      to="/finance/payroll"
-                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
-                    >
-                      <i className="fa-solid fa-users"></i>
-                      Payroll
-                    </Link>
-                    <Link
-                      to="/finance/create"
-                      className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
-                    >
-                      <i className="fa-solid fa-plus"></i>
-                      New Transaction
-                    </Link>
-                </div>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Finance & Payroll
+              </h1>
+              <p className="text-emerald-100">
+                Manage budgets and crew payments
+              </p>
             </div>
+            <div className="flex gap-3">
+              <Link
+                to="/finance/payroll"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
+              >
+                <i className="fa-solid fa-users"></i>
+                Payroll
+              </Link>
+              <Link
+                to="/finance/create"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
+              >
+                <i className="fa-solid fa-plus"></i>
+                New Transaction
+              </Link>
+            </div>
+          </div>
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -119,8 +142,12 @@ export default function FinanceList() {
                   <i className="fa-solid fa-arrow-trend-up text-emerald-300 text-xl"></i>
                 </div>
                 <div>
-                  <p className="text-emerald-100 text-xs font-semibold uppercase">Total Income</p>
-                  <p className="text-2xl font-bold text-white">{formatRupiah(summary.totalIncome || 0)}</p>
+                  <p className="text-emerald-100 text-xs font-semibold uppercase">
+                    Total Income
+                  </p>
+                  <p className="text-2xl font-bold text-white">
+                    {formatRupiah(summary.totalIncome || 0)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -131,8 +158,12 @@ export default function FinanceList() {
                   <i className="fa-solid fa-arrow-trend-down text-red-300 text-xl"></i>
                 </div>
                 <div>
-                  <p className="text-emerald-100 text-xs font-semibold uppercase">Total Expense</p>
-                  <p className="text-2xl font-bold text-white">{formatRupiah(summary.totalExpense || 0)}</p>
+                  <p className="text-emerald-100 text-xs font-semibold uppercase">
+                    Total Expense
+                  </p>
+                  <p className="text-2xl font-bold text-white">
+                    {formatRupiah(summary.totalExpense || 0)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -143,9 +174,13 @@ export default function FinanceList() {
                   <i className="fa-solid fa-wallet text-blue-300 text-xl"></i>
                 </div>
                 <div>
-                  <p className="text-emerald-100 text-xs font-semibold uppercase">Net Balance</p>
+                  <p className="text-emerald-100 text-xs font-semibold uppercase">
+                    Net Balance
+                  </p>
                   <p className="text-2xl font-bold text-white">
-                    {formatRupiah((summary.totalIncome || 0) - (summary.totalExpense || 0))}
+                    {formatRupiah(
+                      (summary.totalIncome || 0) - (summary.totalExpense || 0),
+                    )}
                   </p>
                 </div>
               </div>
@@ -163,7 +198,7 @@ export default function FinanceList() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <select
             value={filters.type}
-            onChange={(e) => setFilters({...filters, type: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
             className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none transition"
           >
             <option value="">All Types</option>
@@ -173,7 +208,7 @@ export default function FinanceList() {
 
           <select
             value={filters.status}
-            onChange={(e) => setFilters({...filters, status: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none transition"
           >
             <option value="">All Status</option>
@@ -185,12 +220,12 @@ export default function FinanceList() {
           <input
             type="month"
             value={filters.month}
-            onChange={(e) => setFilters({...filters, month: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, month: e.target.value })}
             className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none transition"
           />
 
           <button
-            onClick={() => setFilters({ type: '', status: '', month: '' })}
+            onClick={() => setFilters({ type: "", status: "", month: "" })}
             className="px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition text-gray-600 font-semibold"
           >
             Reset Filters
@@ -230,11 +265,13 @@ export default function FinanceList() {
                     </td>
                     <td className="px-6 py-4">{finance.category}</td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        finance.type === 'Income' 
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          finance.type === "Income"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
                         {finance.type}
                       </span>
                     </td>
@@ -242,29 +279,33 @@ export default function FinanceList() {
                       {formatRupiah(finance.amount)}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(finance.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(finance.status)}`}
+                      >
                         {finance.status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       {/* ✅ FIX: Working Action Buttons */}
                       <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => handleViewDetails(finance.id)}
                           className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
                           title="View Details"
                         >
                           <i className="fa-solid fa-eye"></i>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleEdit(finance.id)}
                           className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
                           title="Edit"
                         >
                           <i className="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button 
-                          onClick={() => handleDelete(finance.id, finance.category)}
+                        <button
+                          onClick={() =>
+                            handleDelete(finance.id, finance.category)
+                          }
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                           title="Delete"
                         >
@@ -280,7 +321,9 @@ export default function FinanceList() {
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <i className="fa-solid fa-receipt text-4xl mb-3 opacity-30"></i>
                       <p className="text-lg mb-2">No transactions found</p>
-                      <p className="text-sm">Try adjusting your filters or create a new transaction</p>
+                      <p className="text-sm">
+                        Try adjusting your filters or create a new transaction
+                      </p>
                     </div>
                   </td>
                 </tr>
@@ -288,6 +331,57 @@ export default function FinanceList() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              Showing {(page - 1) * limit + 1} - {Math.min(page * limit, total)}{" "}
+              of {total} transactions
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+              >
+                <i className="fa-solid fa-chevron-left text-sm"></i>
+              </button>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setPage(pageNum)}
+                    className={`w-10 h-10 rounded-lg font-semibold transition ${
+                      page === pageNum
+                        ? "bg-emerald-600 text-white"
+                        : "border border-gray-200 hover:bg-gray-50 text-gray-600"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+              >
+                <i className="fa-solid fa-chevron-right text-sm"></i>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

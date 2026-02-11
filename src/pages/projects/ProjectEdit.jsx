@@ -1,23 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { projectService } from '../../services/projectService';
-import { formatNumberInput, parseNumberInput } from '../../utils/formatters';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { projectService } from "../../services/projectService";
+import { formatNumberInput, parseNumberInput } from "../../utils/formatters";
+import toast from "react-hot-toast";
 
 export default function ProjectEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [broadcasters, setBroadcasters] = useState([]);
   const [investors, setInvestors] = useState([]);
 
-  const budgetDisplay = watch('budget_display');
-  const incomeDisplay = watch('income_display');
-
-  
+  const budgetDisplay = watch("budget_display");
+  const incomeDisplay = watch("income_display");
 
   useEffect(() => {
     fetchData();
@@ -26,14 +30,14 @@ export default function ProjectEdit() {
   useEffect(() => {
     if (budgetDisplay) {
       const value = parseNumberInput(budgetDisplay);
-      setValue('total_budget_plan', value);
+      setValue("total_budget_plan", value);
     }
   }, [budgetDisplay, setValue]);
 
   useEffect(() => {
     if (incomeDisplay) {
       const value = parseNumberInput(incomeDisplay);
-      setValue('target_income', value);
+      setValue("target_income", value);
     }
   }, [incomeDisplay, setValue]);
 
@@ -47,40 +51,45 @@ export default function ProjectEdit() {
       const project = projectRes.data;
 
       // Set form values
-      setValue('title', project.title);
-      setValue('client_id', project.client_id || '');
-      setValue('investor_id', project.investor_id || '');
-      setValue('type', project.type);
-      setValue('budget_display', formatNumberInput(project.total_budget_plan.toString()));
-      setValue('total_budget_plan', project.total_budget_plan);
-      setValue('income_display', formatNumberInput(project.target_income.toString()));
-      setValue('target_income', project.target_income);
-      setValue('start_date', project.start_date.split('T')[0]);
-      setValue('deadline_date', project.deadline_date.split('T')[0]);
-      setValue('global_status', project.global_status);
-      setValue('description', project.description || '');
-
+      setValue("title", project.title);
+      setValue("client_id", project.client_id || "");
+      setValue("investor_id", project.investor_id || "");
+      setValue("type", project.type);
+      setValue(
+        "budget_display",
+        formatNumberInput(project.total_budget_plan.toString()),
+      );
+      setValue("total_budget_plan", project.total_budget_plan);
+      setValue(
+        "income_display",
+        formatNumberInput(project.target_income.toString()),
+      );
+      setValue("target_income", project.target_income);
+      setValue("start_date", project.start_date.split("T")[0]);
+      setValue("deadline_date", project.deadline_date.split("T")[0]);
+      setValue("global_status", project.global_status);
+      setValue("description", project.description || "");
     } catch (error) {
-      toast.error('Gagal memuat data project');
+      toast.error("Gagal memuat data project");
       console.error(error);
-      navigate('/projects');
+      navigate("/projects");
     } finally {
       setFetching(false);
     }
   };
 
   const fetchUsers = async () => {
-  try {
-    const response = await api.get('/auth/users');
-    const users = response.data.data;
-    
-    setBroadcasters(users.filter(u => u.role === 'broadcaster'));
-    setInvestors(users.filter(u => u.role === 'investor'));
-    setProducers(users.filter(u => u.role === 'producer')); // ✨ ADD
-  } catch (error) {
-    console.error('Failed to fetch users:', error);
-  }
-};
+    try {
+      const response = await api.get("/auth/users");
+      const users = response.data.data;
+
+      setBroadcasters(users.filter((u) => u.role === "broadcaster"));
+      setInvestors(users.filter((u) => u.role === "investor"));
+      setProducers(users.filter((u) => u.role === "producer")); // ✨ ADD
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -99,10 +108,10 @@ export default function ProjectEdit() {
       };
 
       await projectService.update(id, payload);
-      toast.success('Project berhasil diupdate!');
+      toast.success("Project berhasil diupdate!");
       navigate(`/projects/${id}`);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Gagal update project');
+      toast.error(error.response?.data?.message || "Gagal update project");
       console.error(error);
     } finally {
       setLoading(false);
@@ -118,7 +127,7 @@ export default function ProjectEdit() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4"></i>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-ocean-500 mb-4"></i>
           <p className="text-gray-500">Loading project data...</p>
         </div>
       </div>
@@ -131,7 +140,7 @@ export default function ProjectEdit() {
       <div className="mb-8">
         <button
           onClick={() => navigate(`/projects/${id}`)}
-          className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-6 transition font-medium text-sm group"
+          className="inline-flex items-center text-gray-500 hover:text-ocean-500 mb-6 transition font-medium text-sm group"
         >
           <i className="fa-solid fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i>
           Back to Detail
@@ -145,11 +154,13 @@ export default function ProjectEdit() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Edit Project</h1>
-                <p className="text-fuchsia-100 mt-1">Update project information</p>
+                <p className="text-fuchsia-100 mt-1">
+                  Update project information
+                </p>
               </div>
             </div>
           </div>
-          
+
           {/* Decorative elements */}
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
@@ -157,7 +168,10 @@ export default function ProjectEdit() {
       </div>
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
+      >
         <div className="p-8 space-y-8">
           {/* Basic Information */}
           <div>
@@ -174,9 +188,11 @@ export default function ProjectEdit() {
                 </label>
                 <input
                   type="text"
-                  {...register('title', { required: 'Judul harus diisi' })}
+                  {...register("title", { required: "Judul harus diisi" })}
                   className={`w-full px-4 py-3 rounded-xl border ${
-                    errors.title ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
+                    errors.title
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200 bg-gray-50"
                   } focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition`}
                   placeholder="Contoh: FTV Cinta di Semarang"
                 />
@@ -190,27 +206,33 @@ export default function ProjectEdit() {
 
               {/* Project Type */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {['Movie', 'Series', 'TVC', 'Event'].map((type) => (
+                {["Movie", "Series", "TVC", "Event"].map((type) => (
                   <label
                     key={type}
                     className="relative flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-violet-300 transition group"
                   >
                     <input
                       type="radio"
-                      {...register('type', { required: 'Pilih tipe project' })}
+                      {...register("type", { required: "Pilih tipe project" })}
                       value={type}
                       className="sr-only peer"
                     />
                     <div className="flex-1 flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-violet-50 peer-checked:bg-violet-600 transition">
-                        <i className={`fa-solid ${
-                          type === 'Movie' ? 'fa-film' :
-                          type === 'Series' ? 'fa-tv' :
-                          type === 'TVC' ? 'fa-bullhorn' : 'fa-calendar-days'
-                        } text-gray-500 group-hover:text-violet-600 peer-checked:text-white transition`}></i>
+                        <i
+                          className={`fa-solid ${
+                            type === "Movie"
+                              ? "fa-film"
+                              : type === "Series"
+                                ? "fa-tv"
+                                : type === "TVC"
+                                  ? "fa-bullhorn"
+                                  : "fa-calendar-days"
+                          } text-gray-500 group-hover:text-violet-600 peer-checked:text-white transition`}
+                        ></i>
                       </div>
                       <span className="font-semibold text-gray-700 group-hover:text-violet-600 peer-checked:text-violet-600 transition">
-                        {type === 'TVC' ? 'TVC / Iklan' : type}
+                        {type === "TVC" ? "TVC / Iklan" : type}
                       </span>
                     </div>
                     <i className="fa-solid fa-circle-check text-transparent peer-checked:text-violet-600 text-xl"></i>
@@ -226,7 +248,9 @@ export default function ProjectEdit() {
               <i className="fa-solid fa-handshake text-violet-600"></i>
               Klien & Investor
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Pilih broadcaster dan sumber pendanaan</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Pilih broadcaster dan sumber pendanaan
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -234,12 +258,14 @@ export default function ProjectEdit() {
                   Broadcaster / Klien
                 </label>
                 <select
-                  {...register('client_id')}
+                  {...register("client_id")}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition"
                 >
                   <option value="">Internal / Tanpa Klien</option>
                   {broadcasters.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -249,12 +275,14 @@ export default function ProjectEdit() {
                   Investor / Pendana
                 </label>
                 <select
-                  {...register('investor_id')}
+                  {...register("investor_id")}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition"
                 >
                   <option value="">Internal Funding</option>
                   {investors.map((i) => (
-                    <option key={i.id} value={i.id}>{i.name}</option>
+                    <option key={i.id} value={i.id}>
+                      {i.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -267,7 +295,9 @@ export default function ProjectEdit() {
               <i className="fa-solid fa-wallet text-violet-600"></i>
               Informasi Keuangan
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Budget dan target pendapatan</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Budget dan target pendapatan
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -275,15 +305,20 @@ export default function ProjectEdit() {
                   Budget Plan (Cost) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-400 font-bold">Rp</span>
+                  <span className="absolute left-4 top-3 text-gray-400 font-bold">
+                    Rp
+                  </span>
                   <input
                     type="text"
-                    {...register('budget_display')}
-                    onChange={(e) => handleNumberInput(e, 'budget_display')}
+                    {...register("budget_display")}
+                    onChange={(e) => handleNumberInput(e, "budget_display")}
                     className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition"
                     placeholder="500.000.000"
                   />
-                  <input type="hidden" {...register('total_budget_plan', { required: true })} />
+                  <input
+                    type="hidden"
+                    {...register("total_budget_plan", { required: true })}
+                  />
                 </div>
               </div>
 
@@ -292,15 +327,20 @@ export default function ProjectEdit() {
                   Target Income <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-400 font-bold">Rp</span>
+                  <span className="absolute left-4 top-3 text-gray-400 font-bold">
+                    Rp
+                  </span>
                   <input
                     type="text"
-                    {...register('income_display')}
-                    onChange={(e) => handleNumberInput(e, 'income_display')}
+                    {...register("income_display")}
+                    onChange={(e) => handleNumberInput(e, "income_display")}
                     className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition"
                     placeholder="750.000.000"
                   />
-                  <input type="hidden" {...register('target_income', { required: true })} />
+                  <input
+                    type="hidden"
+                    {...register("target_income", { required: true })}
+                  />
                 </div>
               </div>
             </div>
@@ -312,7 +352,9 @@ export default function ProjectEdit() {
               <i className="fa-solid fa-calendar-days text-violet-600"></i>
               Timeline Project
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Tentukan jadwal produksi</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Tentukan jadwal produksi
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -321,7 +363,9 @@ export default function ProjectEdit() {
                 </label>
                 <input
                   type="date"
-                  {...register('start_date', { required: 'Tanggal mulai harus diisi' })}
+                  {...register("start_date", {
+                    required: "Tanggal mulai harus diisi",
+                  })}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition"
                 />
               </div>
@@ -332,7 +376,9 @@ export default function ProjectEdit() {
                 </label>
                 <input
                   type="date"
-                  {...register('deadline_date', { required: 'Deadline harus diisi' })}
+                  {...register("deadline_date", {
+                    required: "Deadline harus diisi",
+                  })}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition"
                 />
               </div>
@@ -345,14 +391,36 @@ export default function ProjectEdit() {
               <i className="fa-solid fa-flag text-violet-600"></i>
               Project Status
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Lifecycle status project</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Lifecycle status project
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
-                { value: 'Draft', label: 'Draft', icon: 'fa-file', color: 'gray' },
-                { value: 'In Progress', label: 'In Progress', icon: 'fa-spinner', color: 'blue' },
-                { value: 'On Hold', label: 'On Hold', icon: 'fa-pause', color: 'orange' },
-                { value: 'Completed', label: 'Completed', icon: 'fa-check-circle', color: 'emerald' },
+                {
+                  value: "Draft",
+                  label: "Draft",
+                  icon: "fa-file",
+                  color: "gray",
+                },
+                {
+                  value: "In Progress",
+                  label: "In Progress",
+                  icon: "fa-spinner",
+                  color: "blue",
+                },
+                {
+                  value: "On Hold",
+                  label: "On Hold",
+                  icon: "fa-pause",
+                  color: "orange",
+                },
+                {
+                  value: "Completed",
+                  label: "Completed",
+                  icon: "fa-check-circle",
+                  color: "emerald",
+                },
               ].map((status) => (
                 <label
                   key={status.value}
@@ -360,13 +428,17 @@ export default function ProjectEdit() {
                 >
                   <input
                     type="radio"
-                    {...register('global_status')}
+                    {...register("global_status")}
                     value={status.value}
                     className="sr-only peer"
                   />
                   <div className="flex-1 flex flex-col items-center text-center gap-2">
-                    <div className={`w-12 h-12 rounded-xl bg-${status.color}-50 flex items-center justify-center peer-checked:bg-${status.color}-500 transition`}>
-                      <i className={`fa-solid ${status.icon} text-${status.color}-500 peer-checked:text-white transition`}></i>
+                    <div
+                      className={`w-12 h-12 rounded-xl bg-${status.color}-50 flex items-center justify-center peer-checked:bg-${status.color}-500 transition`}
+                    >
+                      <i
+                        className={`fa-solid ${status.icon} text-${status.color}-500 peer-checked:text-white transition`}
+                      ></i>
                     </div>
                     <span className="font-semibold text-gray-700 text-sm peer-checked:text-violet-600 transition">
                       {status.label}
@@ -384,7 +456,7 @@ export default function ProjectEdit() {
               Deskripsi Project
             </label>
             <textarea
-              {...register('description')}
+              {...register("description")}
               rows="4"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-violet-500 focus:ring-4 focus:ring-violet-100 outline-none transition resize-none"
               placeholder="Ceritakan lebih detail tentang project ini..."

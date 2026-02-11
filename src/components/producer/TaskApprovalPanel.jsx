@@ -12,18 +12,35 @@ export default function TaskApprovalPanel({
   const [pendingTasks, setPendingTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
 
   useEffect(() => {
     if (isOpen) {
-      fetchPendingApprovals();
+      setPage(1); // Reset page when opening
+      fetchPendingApprovals(1);
     }
   }, [isOpen]);
 
-  const fetchPendingApprovals = async () => {
+  useEffect(() => {
+    if (isOpen && page > 1) {
+      fetchPendingApprovals(page);
+    }
+  }, [page]);
+
+  const fetchPendingApprovals = async (pageNum = page) => {
     setLoading(true);
     try {
-      const response = await producerService.getPendingApprovals();
+      const response = await producerService.getPendingApprovals(
+        null,
+        pageNum,
+        limit,
+      );
       setPendingTasks(response.data || []);
+      setTotalPages(response.totalPages || 1);
+      setTotal(response.total || 0);
     } catch (error) {
       console.error("Failed to fetch pending approvals:", error);
       toast.error("Failed to load pending approvals");
@@ -189,12 +206,12 @@ export default function TaskApprovalPanel({
                         </h4>
 
                         <div className="flex flex-wrap gap-2 text-sm">
-                          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
+                          <span className="px-2 py-1 bg-sky-100 text-ocean-600 rounded-lg">
                             <i className="fa-solid fa-film mr-1"></i>
                             {task.project?.title || "Unknown Project"}
                           </span>
                           {task.episode && (
-                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg">
+                            <span className="px-2 py-1 bg-sky-100 text-ocean-600 rounded-lg">
                               <i className="fa-solid fa-tv mr-1"></i>
                               Eps {task.episode.episode_number}
                             </span>
@@ -254,6 +271,37 @@ export default function TaskApprovalPanel({
                     </div>
                   </div>
                 ))}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600">
+                      Showing {(page - 1) * limit + 1} -{" "}
+                      {Math.min(page * limit, total)} of {total} tasks
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                      >
+                        <i className="fa-solid fa-chevron-left"></i>
+                      </button>
+                      <span className="px-3 py-2 text-sm font-medium text-gray-700">
+                        Page {page} of {totalPages}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={page === totalPages}
+                        className="px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                      >
+                        <i className="fa-solid fa-chevron-right"></i>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="py-16 text-center">

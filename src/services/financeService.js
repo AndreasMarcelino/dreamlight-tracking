@@ -1,19 +1,19 @@
-import api from './api';
+import api from "./api";
 
 export const financeService = {
   getAll: async (params = {}) => {
-    const response = await api.get('/finance', { params });
+    const response = await api.get("/finance", { params });
     return response.data;
   },
 
   getSummary: async (projectId) => {
     const params = projectId ? { project_id: projectId } : {};
-    const response = await api.get('/finance/summary', { params });
+    const response = await api.get("/finance/summary", { params });
     return response.data;
   },
 
   create: async (data) => {
-    const response = await api.post('/finance', data);
+    const response = await api.post("/finance", data);
     return response.data;
   },
 
@@ -27,13 +27,17 @@ export const financeService = {
     return response.data;
   },
 
-  getPendingPayroll: async () => {
-    const response = await api.get('/finance/payroll/pending');
+  getPendingPayroll: async (page = 1, limit = 10) => {
+    const response = await api.get(
+      `/finance/payroll/pending?page=${page}&limit=${limit}`,
+    );
     return response.data;
   },
 
   payCrew: async (milestoneId) => {
-    const response = await api.post('/finance/pay-crew', { milestone_id: milestoneId });
+    const response = await api.post("/finance/pay-crew", {
+      milestone_id: milestoneId,
+    });
     return response.data;
-  }
+  },
 };

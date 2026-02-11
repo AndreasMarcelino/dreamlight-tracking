@@ -9,6 +9,10 @@ export default function PayrollManagement() {
   const [totalPending, setTotalPending] = useState(0);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
   const isMounted = useRef(true);
   const hasShownError = useRef(false);
 
@@ -20,7 +24,7 @@ export default function PayrollManagement() {
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [page]);
 
   const fetchPendingPayrolls = async () => {
     if (!isMounted.current) return;
@@ -29,7 +33,7 @@ export default function PayrollManagement() {
     hasShownError.current = false; // Reset error flag
 
     try {
-      const response = await financeService.getPendingPayroll();
+      const response = await financeService.getPendingPayroll(page, limit);
 
       // Only update state if component is still mounted
       if (!isMounted.current) return;
@@ -37,9 +41,13 @@ export default function PayrollManagement() {
       if (response && response.data) {
         setPendingPayrolls(response.data);
         setTotalPending(response.totalPending || 0);
+        setTotalPages(response.totalPages || 1);
+        setTotal(response.total || 0);
       } else {
         setPendingPayrolls([]);
         setTotalPending(0);
+        setTotalPages(1);
+        setTotal(0);
       }
     } catch (error) {
       // Only show error if component is still mounted and error hasn't been shown
@@ -266,111 +274,169 @@ export default function PayrollManagement() {
       {/* Payroll Table */}
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         {pendingPayrolls.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-left border-collapse">
-              <thead className="bg-gray-50">
-                <tr className="text-gray-400 text-xs uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.length === pendingPayrolls.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-emerald-600 rounded focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </th>
-                  <th className="px-6 py-4 font-semibold">Crew Member</th>
-                  <th className="px-6 py-4 font-semibold">Task</th>
-                  <th className="px-6 py-4 font-semibold">Project</th>
-                  <th className="px-6 py-4 font-semibold">Phase</th>
-                  <th className="px-6 py-4 font-semibold">Honor Amount</th>
-                  <th className="px-6 py-4 font-semibold">Completed</th>
-                  <th className="px-6 py-4 font-semibold text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50 text-sm text-gray-600">
-                {pendingPayrolls.map((payroll) => (
-                  <tr key={payroll.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4">
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-left border-collapse">
+                <thead className="bg-gray-50">
+                  <tr className="text-gray-400 text-xs uppercase tracking-wider">
+                    <th className="px-6 py-4 font-semibold">
                       <input
                         type="checkbox"
-                        checked={selectedIds.includes(payroll.id)}
-                        onChange={() => handleSelectOne(payroll.id)}
+                        checked={selectedIds.length === pendingPayrolls.length}
+                        onChange={handleSelectAll}
                         className="w-4 h-4 text-emerald-600 rounded focus:ring-2 focus:ring-emerald-500"
                       />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <span className="text-emerald-600 font-bold text-sm">
-                            {payroll.user?.name
-                              ?.substring(0, 2)
-                              .toUpperCase() || "??"}
-                          </span>
+                    </th>
+                    <th className="px-6 py-4 font-semibold">Crew Member</th>
+                    <th className="px-6 py-4 font-semibold">Task</th>
+                    <th className="px-6 py-4 font-semibold">Project</th>
+                    <th className="px-6 py-4 font-semibold">Phase</th>
+                    <th className="px-6 py-4 font-semibold">Honor Amount</th>
+                    <th className="px-6 py-4 font-semibold">Completed</th>
+                    <th className="px-6 py-4 font-semibold text-right">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 text-sm text-gray-600">
+                  {pendingPayrolls.map((payroll) => (
+                    <tr
+                      key={payroll.id}
+                      className="hover:bg-gray-50 transition"
+                    >
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(payroll.id)}
+                          onChange={() => handleSelectOne(payroll.id)}
+                          className="w-4 h-4 text-emerald-600 rounded focus:ring-2 focus:ring-emerald-500"
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                            <span className="text-emerald-600 font-bold text-sm">
+                              {payroll.user?.name
+                                ?.substring(0, 2)
+                                .toUpperCase() || "??"}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-800">
+                              {payroll.user?.name || "Unknown"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {payroll.user?.email || "-"}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-gray-800">
-                            {payroll.user?.name || "Unknown"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {payroll.user?.email || "-"}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-semibold">
-                      {payroll.task_name}
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-semibold text-gray-800">
-                        {payroll.project?.title || "Unknown Project"}
-                      </p>
-                      {payroll.episode && (
-                        <p className="text-xs text-gray-500">
-                          Episode {payroll.episode.episode_number}
+                      </td>
+                      <td className="px-6 py-4 font-semibold">
+                        {payroll.task_name}
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-gray-800">
+                          {payroll.project?.title || "Unknown Project"}
                         </p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          payroll.phase_category === "Pre-Production"
-                            ? "bg-indigo-100 text-indigo-700"
-                            : payroll.phase_category === "Production"
-                              ? "bg-orange-100 text-orange-700"
-                              : "bg-blue-100 text-blue-700"
+                        {payroll.episode && (
+                          <p className="text-xs text-gray-500">
+                            Episode {payroll.episode.episode_number}
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            payroll.phase_category === "Pre-Production"
+                              ? "bg-sky-100 text-ocean-600"
+                              : payroll.phase_category === "Production"
+                                ? "bg-orange-100 text-orange-700"
+                                : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {payroll.phase_category}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-lg font-bold text-emerald-600">
+                          {formatRupiah(payroll.honor_amount)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {formatDateShort(payroll.updated_at)}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() =>
+                            handlePaySingle(
+                              payroll.id,
+                              payroll.user?.name || "Crew",
+                              payroll.honor_amount,
+                            )
+                          }
+                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-xs shadow-lg shadow-emerald-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 ml-auto"
+                        >
+                          <i className="fa-solid fa-money-bill-wave"></i>
+                          Pay Now
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                <p className="text-sm text-gray-500">
+                  Showing {(page - 1) * limit + 1} -{" "}
+                  {Math.min(page * limit, total)} of {total} pending payrolls
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                  >
+                    <i className="fa-solid fa-chevron-left text-sm"></i>
+                  </button>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (page <= 3) {
+                      pageNum = i + 1;
+                    } else if (page >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = page - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-10 h-10 rounded-lg font-semibold transition ${
+                          page === pageNum
+                            ? "bg-emerald-600 text-white"
+                            : "border border-gray-200 hover:bg-gray-50 text-gray-600"
                         }`}
                       >
-                        {payroll.phase_category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-lg font-bold text-emerald-600">
-                        {formatRupiah(payroll.honor_amount)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {formatDateShort(payroll.updated_at)}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() =>
-                          handlePaySingle(
-                            payroll.id,
-                            payroll.user?.name || "Crew",
-                            payroll.honor_amount,
-                          )
-                        }
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-semibold text-xs shadow-lg shadow-emerald-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 ml-auto"
-                      >
-                        <i className="fa-solid fa-money-bill-wave"></i>
-                        Pay Now
+                        {pageNum}
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    );
+                  })}
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="p-2 rounded-lg border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+                  >
+                    <i className="fa-solid fa-chevron-right text-sm"></i>
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-16 text-center">
             <div className="max-w-md mx-auto">

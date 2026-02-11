@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import Swal from 'sweetalert2';
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
@@ -12,14 +12,14 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const handleLogout = () => {
     Swal.fire({
-      title: 'Sign Out?',
-      text: 'Anda akan keluar dari sesi ini.',
-      icon: 'warning',
+      title: "Sign Out?",
+      text: "Anda akan keluar dari sesi ini.",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#d1d5db',
-      confirmButtonText: 'Ya, Keluar',
-      cancelButtonText: 'Batal',
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#d1d5db",
+      confirmButtonText: "Ya, Keluar",
+      cancelButtonText: "Batal",
       reverseButtons: true,
     }).then((result) => {
       if (result.isConfirmed) {
@@ -41,13 +41,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       {/* Sidebar */}
       <aside
         className={`w-72 bg-white h-screen fixed left-0 top-0 border-r border-gray-100 flex flex-col z-50 transition-transform duration-300 shadow-xl lg:shadow-none ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
         {/* Header Sidebar */}
         <div className="h-24 flex items-center justify-between px-8">
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-2 rounded-lg">
+            <div className="bg-ocean-500 p-2 rounded-lg">
               <i className="fa-solid fa-film text-white text-xl"></i>
             </div>
             <h1 className="text-2xl font-bold text-gray-800 tracking-wide">
@@ -73,22 +73,22 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <Link
             to="/dashboard"
             className={`flex items-center px-6 py-4 rounded-2xl transition-all duration-200 group ${
-              isActive('/dashboard')
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                : 'text-gray-500 hover:bg-indigo-50 hover:text-indigo-600'
+              isActive("/dashboard")
+                ? "bg-ocean-500 text-white shadow-lg shadow-ocean-200"
+                : "text-gray-500 hover:bg-sky-100 hover:text-ocean-500"
             }`}
           >
             <i className="fa-solid fa-chart-pie text-lg mr-4 w-6 text-center"></i>
             <span className="font-medium">Dashboard</span>
           </Link>
 
-          {['admin', 'producer'].includes(user?.role) && (
+          {["admin", "producer"].includes(user?.role) && (
             <Link
               to="/projects"
               className={`flex items-center px-6 py-4 rounded-2xl transition-all duration-200 group ${
-                isActive('/projects')
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                  : 'text-gray-500 hover:bg-indigo-50 hover:text-indigo-600'
+                isActive("/projects")
+                  ? "bg-ocean-500 text-white shadow-lg shadow-ocean-200"
+                  : "text-gray-500 hover:bg-sky-100 hover:text-ocean-500"
               }`}
             >
               <i className="fa-solid fa-clapperboard text-lg mr-4 w-6 text-center"></i>
@@ -96,17 +96,46 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             </Link>
           )}
 
-          {['admin', 'producer'].includes(user?.role) && (
+          {["admin", "producer"].includes(user?.role) && (
             <Link
               to="/finance"
               className={`flex items-center px-6 py-4 rounded-2xl transition-all duration-200 group ${
-                isActive('/finance')
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                  : 'text-gray-500 hover:bg-indigo-50 hover:text-indigo-600'
+                isActive("/finance")
+                  ? "bg-ocean-500 text-white shadow-lg shadow-ocean-200"
+                  : "text-gray-500 hover:bg-sky-100 hover:text-ocean-500"
               }`}
             >
               <i className="fa-solid fa-wallet text-lg mr-4 w-6 text-center"></i>
               <span className="font-medium">Finance & Payroll</span>
+            </Link>
+          )}
+
+          {["admin"].includes(user?.role) && (
+            <Link
+              to="/users"
+              className={`flex items-center px-6 py-4 rounded-2xl transition-all duration-200 group ${
+                isActive("/users")
+                  ? "bg-ocean-500 text-white shadow-lg shadow-ocean-200"
+                  : "text-gray-500 hover:bg-sky-100 hover:text-ocean-500"
+              }`}
+            >
+              <i className="fa-solid fa-users text-lg mr-4 w-6 text-center"></i>
+              <span className="font-medium">Users</span>
+            </Link>
+          )}
+
+          {/* Broadcaster Menu */}
+          {user?.role === "broadcaster" && (
+            <Link
+              to="/broadcaster/projects"
+              className={`flex items-center px-6 py-4 rounded-2xl transition-all duration-200 group ${
+                isActive("/broadcaster/projects")
+                  ? "bg-ocean-500 text-white shadow-lg shadow-ocean-200"
+                  : "text-gray-500 hover:bg-sky-100 hover:text-ocean-500"
+              }`}
+            >
+              <i className="fa-solid fa-clapperboard text-lg mr-4 w-6 text-center"></i>
+              <span className="font-medium">My Projects</span>
             </Link>
           )}
         </nav>
@@ -115,22 +144,22 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         <div className="p-6 border-t border-gray-50">
           <div
             onClick={handleLogout}
-            className="bg-indigo-50 rounded-2xl p-4 relative overflow-hidden group cursor-pointer transition hover:bg-red-50"
+            className="bg-sky-100 rounded-2xl p-4 relative overflow-hidden group cursor-pointer transition hover:bg-red-50"
           >
             <div className="relative z-10 flex items-center gap-3">
-              <div className="bg-white p-2 rounded-full shadow-sm text-indigo-600 group-hover:text-red-600 transition-colors">
+              <div className="bg-white p-2 rounded-full shadow-sm text-ocean-500 group-hover:text-red-600 transition-colors">
                 <i className="fa-solid fa-right-from-bracket"></i>
               </div>
               <div>
-                <h4 className="font-bold text-indigo-900 group-hover:text-red-600 transition-colors">
+                <h4 className="font-bold text-ocean-700 group-hover:text-red-600 transition-colors">
                   Sign Out
                 </h4>
-                <p className="text-xs text-indigo-600 group-hover:text-red-400 transition-colors">
+                <p className="text-xs text-ocean-500 group-hover:text-red-400 transition-colors">
                   End session
                 </p>
               </div>
             </div>
-            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-indigo-200 rounded-full opacity-50 group-hover:bg-red-200 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-sky-200 rounded-full opacity-50 group-hover:bg-red-200 group-hover:scale-150 transition-transform duration-500"></div>
           </div>
         </div>
       </aside>

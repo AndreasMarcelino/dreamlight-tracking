@@ -1,22 +1,28 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { projectService } from '../../services/projectService';
-import { formatNumberInput, parseNumberInput } from '../../utils/formatters';
-import api from '../../services/api';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { projectService } from "../../services/projectService";
+import { formatNumberInput, parseNumberInput } from "../../utils/formatters";
+import api from "../../services/api";
+import toast from "react-hot-toast";
 
 export default function ProjectCreate() {
   const navigate = useNavigate();
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm();
   const [loading, setLoading] = useState(false);
   const [broadcasters, setBroadcasters] = useState([]);
   const [investors, setInvestors] = useState([]);
   const [producers, setProducers] = useState([]); // ✨ NEW
 
   // Watch for formatted inputs
-  const budgetDisplay = watch('budget_display');
-  const incomeDisplay = watch('income_display');
+  const budgetDisplay = watch("budget_display");
+  const incomeDisplay = watch("income_display");
 
   useEffect(() => {
     fetchUsers();
@@ -26,28 +32,28 @@ export default function ProjectCreate() {
   useEffect(() => {
     if (budgetDisplay) {
       const value = parseNumberInput(budgetDisplay);
-      setValue('total_budget_plan', value);
+      setValue("total_budget_plan", value);
     }
   }, [budgetDisplay, setValue]);
 
   useEffect(() => {
     if (incomeDisplay) {
       const value = parseNumberInput(incomeDisplay);
-      setValue('target_income', value);
+      setValue("target_income", value);
     }
   }, [incomeDisplay, setValue]);
 
   const fetchUsers = async () => {
     try {
       // ✨ NEW: Fetch all users to get producers, broadcasters, investors
-      const response = await api.get('/auth/users');
+      const response = await api.get("/auth/users");
       const users = response.data.data;
 
-      setBroadcasters(users.filter(u => u.role === 'broadcaster'));
-      setInvestors(users.filter(u => u.role === 'investor'));
-      setProducers(users.filter(u => u.role === 'producer')); // ✨ NEW
+      setBroadcasters(users.filter((u) => u.role === "broadcaster"));
+      setInvestors(users.filter((u) => u.role === "investor"));
+      setProducers(users.filter((u) => u.role === "producer")); // ✨ NEW
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      console.error("Failed to fetch users:", error);
       // Fallback to empty arrays
       setBroadcasters([]);
       setInvestors([]);
@@ -72,10 +78,10 @@ export default function ProjectCreate() {
       };
 
       await projectService.create(payload);
-      toast.success('Project berhasil dibuat!');
-      navigate('/projects');
+      toast.success("Project berhasil dibuat!");
+      navigate("/projects");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Gagal membuat project');
+      toast.error(error.response?.data?.message || "Gagal membuat project");
       console.error(error);
     } finally {
       setLoading(false);
@@ -92,26 +98,30 @@ export default function ProjectCreate() {
       {/* Header with Gradient */}
       <div className="mb-8">
         <button
-          onClick={() => navigate('/projects')}
-          className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-6 transition font-medium text-sm group"
+          onClick={() => navigate("/projects")}
+          className="inline-flex items-center text-gray-500 hover:text-ocean-500 mb-6 transition font-medium text-sm group"
         >
           <i className="fa-solid fa-arrow-left mr-2 group-hover:-translate-x-1 transition-transform"></i>
           Kembali ke Projects
         </button>
 
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-3xl p-8 shadow-2xl">
+        <div className="relative overflow-hidden bg-gradient-to-br from-ocean-500 via-ocean-600 to-ocean-700 rounded-3xl p-8 shadow-2xl">
           <div className="relative z-10">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                 <i className="fa-solid fa-plus text-white text-2xl"></i>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-white">Create New Project</h1>
-                <p className="text-indigo-100 mt-1">Mulai tracking produksi baru</p>
+                <h1 className="text-3xl font-bold text-white">
+                  Create New Project
+                </h1>
+                <p className="text-sky-100 mt-1">
+                  Mulai tracking produksi baru
+                </p>
               </div>
             </div>
           </div>
-          
+
           {/* Decorative elements */}
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
@@ -119,12 +129,15 @@ export default function ProjectCreate() {
       </div>
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
+      >
         <div className="p-8 space-y-8">
           {/* Basic Information Section */}
           <div>
             <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
-              <i className="fa-solid fa-circle-info text-indigo-600"></i>
+              <i className="fa-solid fa-circle-info text-ocean-500"></i>
               Informasi Dasar
             </h2>
             <p className="text-sm text-gray-500 mb-6">Detail utama project</p>
@@ -137,10 +150,12 @@ export default function ProjectCreate() {
                 </label>
                 <input
                   type="text"
-                  {...register('title', { required: 'Judul harus diisi' })}
+                  {...register("title", { required: "Judul harus diisi" })}
                   className={`w-full px-4 py-3 rounded-xl border ${
-                    errors.title ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'
-                  } focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition`}
+                    errors.title
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200 bg-gray-50"
+                  } focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition`}
                   placeholder="Contoh: FTV Cinta di Semarang"
                 />
                 {errors.title && (
@@ -153,30 +168,36 @@ export default function ProjectCreate() {
 
               {/* Project Type */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {['Movie', 'Series', 'TVC', 'Event'].map((type) => (
+                {["Movie", "Series", "TVC", "Event"].map((type) => (
                   <label
                     key={type}
-                    className="relative flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-300 transition group"
+                    className="relative flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-ocean-300 transition group"
                   >
                     <input
                       type="radio"
-                      {...register('type', { required: 'Pilih tipe project' })}
+                      {...register("type", { required: "Pilih tipe project" })}
                       value={type}
                       className="sr-only peer"
                     />
                     <div className="flex-1 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-indigo-50 peer-checked:bg-indigo-600 transition">
-                        <i className={`fa-solid ${
-                          type === 'Movie' ? 'fa-film' :
-                          type === 'Series' ? 'fa-tv' :
-                          type === 'TVC' ? 'fa-bullhorn' : 'fa-calendar-days'
-                        } text-gray-500 group-hover:text-indigo-600 peer-checked:text-white transition`}></i>
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-sky-50 peer-checked:bg-ocean-500 transition">
+                        <i
+                          className={`fa-solid ${
+                            type === "Movie"
+                              ? "fa-film"
+                              : type === "Series"
+                                ? "fa-tv"
+                                : type === "TVC"
+                                  ? "fa-bullhorn"
+                                  : "fa-calendar-days"
+                          } text-gray-500 group-hover:text-ocean-500 peer-checked:text-white transition`}
+                        ></i>
                       </div>
-                      <span className="font-semibold text-gray-700 group-hover:text-indigo-600 peer-checked:text-indigo-600 transition">
-                        {type === 'TVC' ? 'TVC / Iklan' : type}
+                      <span className="font-semibold text-gray-700 group-hover:text-ocean-500 peer-checked:text-ocean-500 transition">
+                        {type === "TVC" ? "TVC / Iklan" : type}
                       </span>
                     </div>
-                    <i className="fa-solid fa-circle-check text-transparent peer-checked:text-indigo-600 text-xl"></i>
+                    <i className="fa-solid fa-circle-check text-transparent peer-checked:text-ocean-500 text-xl"></i>
                   </label>
                 ))}
               </div>
@@ -192,10 +213,12 @@ export default function ProjectCreate() {
           {/* ✨ NEW: Producer & Team Section */}
           <div className="border-t pt-8">
             <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
-              <i className="fa-solid fa-users-gear text-indigo-600"></i>
+              <i className="fa-solid fa-users-gear text-ocean-500"></i>
               Producer & Team
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Assign producer yang akan mengelola project ini</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Assign producer yang akan mengelola project ini
+            </p>
 
             <div className="grid grid-cols-1 gap-6">
               {/* Producer Selection */}
@@ -204,8 +227,8 @@ export default function ProjectCreate() {
                   Project Producer
                 </label>
                 <select
-                  {...register('producer_id')}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                  {...register("producer_id")}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                 >
                   <option value="">No Producer Assigned</option>
                   {producers.map((producer) => (
@@ -225,10 +248,12 @@ export default function ProjectCreate() {
           {/* Client & Investor Section */}
           <div className="border-t pt-8">
             <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
-              <i className="fa-solid fa-handshake text-indigo-600"></i>
+              <i className="fa-solid fa-handshake text-ocean-500"></i>
               Klien & Investor
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Pilih broadcaster dan sumber pendanaan</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Pilih broadcaster dan sumber pendanaan
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Broadcaster */}
@@ -237,12 +262,14 @@ export default function ProjectCreate() {
                   Broadcaster / Klien
                 </label>
                 <select
-                  {...register('client_id')}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                  {...register("client_id")}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                 >
                   <option value="">Internal / Tanpa Klien</option>
                   {broadcasters.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -253,12 +280,14 @@ export default function ProjectCreate() {
                   Investor / Pendana
                 </label>
                 <select
-                  {...register('investor_id')}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                  {...register("investor_id")}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                 >
                   <option value="">Internal Funding</option>
                   {investors.map((i) => (
-                    <option key={i.id} value={i.id}>{i.name}</option>
+                    <option key={i.id} value={i.id}>
+                      {i.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -268,10 +297,12 @@ export default function ProjectCreate() {
           {/* Financial Section */}
           <div className="border-t pt-8">
             <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
-              <i className="fa-solid fa-wallet text-indigo-600"></i>
+              <i className="fa-solid fa-wallet text-ocean-500"></i>
               Informasi Keuangan
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Budget dan target pendapatan</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Budget dan target pendapatan
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Budget */}
@@ -280,15 +311,20 @@ export default function ProjectCreate() {
                   Budget Plan (Cost) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-400 font-bold">Rp</span>
+                  <span className="absolute left-4 top-3 text-gray-400 font-bold">
+                    Rp
+                  </span>
                   <input
                     type="text"
-                    {...register('budget_display')}
-                    onChange={(e) => handleNumberInput(e, 'budget_display')}
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                    {...register("budget_display")}
+                    onChange={(e) => handleNumberInput(e, "budget_display")}
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                     placeholder="500.000.000"
                   />
-                  <input type="hidden" {...register('total_budget_plan', { required: true })} />
+                  <input
+                    type="hidden"
+                    {...register("total_budget_plan", { required: true })}
+                  />
                 </div>
               </div>
 
@@ -298,15 +334,20 @@ export default function ProjectCreate() {
                   Target Income <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-3 text-gray-400 font-bold">Rp</span>
+                  <span className="absolute left-4 top-3 text-gray-400 font-bold">
+                    Rp
+                  </span>
                   <input
                     type="text"
-                    {...register('income_display')}
-                    onChange={(e) => handleNumberInput(e, 'income_display')}
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                    {...register("income_display")}
+                    onChange={(e) => handleNumberInput(e, "income_display")}
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                     placeholder="750.000.000"
                   />
-                  <input type="hidden" {...register('target_income', { required: true })} />
+                  <input
+                    type="hidden"
+                    {...register("target_income", { required: true })}
+                  />
                 </div>
               </div>
             </div>
@@ -315,10 +356,12 @@ export default function ProjectCreate() {
           {/* Timeline Section */}
           <div className="border-t pt-8">
             <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
-              <i className="fa-solid fa-calendar-days text-indigo-600"></i>
+              <i className="fa-solid fa-calendar-days text-ocean-500"></i>
               Timeline Project
             </h2>
-            <p className="text-sm text-gray-500 mb-6">Tentukan jadwal produksi</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Tentukan jadwal produksi
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Start Date */}
@@ -328,8 +371,10 @@ export default function ProjectCreate() {
                 </label>
                 <input
                   type="date"
-                  {...register('start_date', { required: 'Tanggal mulai harus diisi' })}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                  {...register("start_date", {
+                    required: "Tanggal mulai harus diisi",
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                 />
               </div>
 
@@ -340,8 +385,10 @@ export default function ProjectCreate() {
                 </label>
                 <input
                   type="date"
-                  {...register('deadline_date', { required: 'Deadline harus diisi' })}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition"
+                  {...register("deadline_date", {
+                    required: "Deadline harus diisi",
+                  })}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition"
                 />
               </div>
             </div>
@@ -353,9 +400,9 @@ export default function ProjectCreate() {
               Deskripsi Project
             </label>
             <textarea
-              {...register('description')}
+              {...register("description")}
               rows="4"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 outline-none transition resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-sky-100 outline-none transition resize-none"
               placeholder="Ceritakan lebih detail tentang project ini..."
             ></textarea>
           </div>
@@ -365,7 +412,7 @@ export default function ProjectCreate() {
         <div className="bg-gray-50 px-8 py-6 border-t border-gray-100 flex flex-col-reverse sm:flex-row justify-end gap-3">
           <button
             type="button"
-            onClick={() => navigate('/projects')}
+            onClick={() => navigate("/projects")}
             className="px-6 py-3 rounded-xl text-gray-600 font-semibold hover:bg-gray-100 transition border border-gray-200"
           >
             Batal
@@ -373,7 +420,7 @@ export default function ProjectCreate() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="bg-gradient-to-r from-ocean-500 to-ocean-600 hover:from-ocean-600 hover:to-ocean-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-ocean-200 transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">

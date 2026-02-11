@@ -1,16 +1,17 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,10 +19,10 @@ export default function Login() {
 
     try {
       const response = await login(formData.email, formData.password);
-      toast.success(response.message || 'Login berhasil!');
-      navigate('/dashboard');
+      toast.success(response.message || "Login berhasil!");
+      navigate("/dashboard");
     } catch (error) {
-      const message = error.response?.data?.message || 'Login gagal';
+      const message = error.response?.data?.message || "Login gagal";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -39,9 +40,9 @@ export default function Login() {
     <div className="min-h-screen bg-[#F8F9FE] flex items-center justify-center relative overflow-hidden">
       {/* Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-ocean-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-sky-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
       </div>
 
       {/* Login Card */}
@@ -49,7 +50,7 @@ export default function Login() {
         <div className="bg-white rounded-[2rem] shadow-xl border border-white/50 p-8 sm:p-10 backdrop-blur-sm">
           {/* Logo Section */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white mb-4 shadow-lg shadow-indigo-200 transform transition hover:scale-110">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-ocean-500 text-white mb-4 shadow-lg shadow-ocean-200 transform transition hover:scale-110">
               <i className="fa-solid fa-film text-3xl"></i>
             </div>
             <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
@@ -68,7 +69,7 @@ export default function Login() {
                 Email Address
               </label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 group-focus-within:text-ocean-500 transition">
                   <i className="fa-regular fa-envelope text-lg"></i>
                 </span>
                 <input
@@ -76,7 +77,7 @@ export default function Login() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all placeholder-gray-400"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-ocean-500/10 outline-none transition-all placeholder-gray-400"
                   placeholder="name@dreamlight.co.id"
                   required
                   autoFocus
@@ -90,18 +91,27 @@ export default function Login() {
                 Password
               </label>
               <div className="relative group">
-                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 group-focus-within:text-indigo-500 transition">
+                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400 group-focus-within:text-ocean-500 transition">
                   <i className="fa-solid fa-lock text-lg"></i>
                 </span>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all placeholder-gray-400"
+                  className="w-full pl-11 pr-12 py-3.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium focus:bg-white focus:border-ocean-500 focus:ring-4 focus:ring-ocean-500/10 outline-none transition-all placeholder-gray-400"
                   placeholder="Enter your password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-ocean-500 transition"
+                >
+                  <i
+                    className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"}`}
+                  ></i>
+                </button>
               </div>
             </div>
 
@@ -109,7 +119,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5 active:scale-95 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-ocean-500 hover:bg-ocean-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-ocean-200 transition-all transform hover:-translate-y-0.5 active:scale-95 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -117,7 +127,7 @@ export default function Login() {
                   Signing In...
                 </span>
               ) : (
-                'Sign In'
+                "Sign In"
               )}
             </button>
           </form>

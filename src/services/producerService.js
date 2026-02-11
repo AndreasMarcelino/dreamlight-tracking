@@ -8,8 +8,9 @@ export const producerService = {
   },
 
   // Get pending approvals (tasks waiting for approval)
-  getPendingApprovals: async (projectId = null) => {
-    const params = projectId ? { project_id: projectId } : {};
+  getPendingApprovals: async (projectId = null, page = 1, limit = 10) => {
+    const params = { page, limit };
+    if (projectId) params.project_id = projectId;
     const response = await api.get("/milestones/pending-approvals", { params });
     return response.data;
   },
@@ -33,6 +34,14 @@ export const producerService = {
   // Get crew assigned to a project (for dropdown)
   getAssignedCrew: async (projectId) => {
     const response = await api.get(`/projects/${projectId}/crew`);
+    return response.data;
+  },
+
+  // Get all assigned crew for producer's projects
+  getAllAssignedCrew: async (page = 1, limit = 10) => {
+    const response = await api.get("/dashboard/producer/crew", {
+      params: { page, limit },
+    });
     return response.data;
   },
 

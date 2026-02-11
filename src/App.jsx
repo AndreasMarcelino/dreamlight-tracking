@@ -1,22 +1,28 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import MainLayout from './layouts/MainLayout';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import MainLayout from "./layouts/MainLayout";
 
 // Pages
-import Login from './pages/auth/Login';
-import ProjectList from './pages/projects/ProjectList';
-import ProjectCreate from './pages/projects/ProjectCreate';
-import ProjectEdit from './pages/projects/ProjectEdit';
-import ProjectDetail from './pages/projects/ProjectDetail';
-import AdminDashboard from './pages/dashboard/AdminDashboard';
-import CrewDashboard from './pages/dashboard/CrewDashboard';
-import BroadcasterDashboard from './pages/dashboard/BroadcasterDashboard';
-import InvestorDashboard from './pages/dashboard/InvestorDashboard';
-import FinanceList from './pages/finance/FinanceList';
-import FinanceCreate from './pages/finance/FinanceCreate';
-import PayrollManagement from './pages/finance/PayrollManagement';
-import UserManagement from './pages/users/UserManagement';
+import Login from "./pages/auth/Login";
+import Profile from "./pages/profile/Profile";
+import ProjectList from "./pages/projects/ProjectList";
+import ProjectCreate from "./pages/projects/ProjectCreate";
+import ProjectEdit from "./pages/projects/ProjectEdit";
+import ProjectDetail from "./pages/projects/ProjectDetail";
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import ProducerDashboard from "./pages/dashboard/ProducerDashboard";
+import CrewDashboard from "./pages/dashboard/CrewDashboard";
+import BroadcasterDashboard from "./pages/dashboard/BroadcasterDashboard";
+import InvestorDashboard from "./pages/dashboard/InvestorDashboard";
+import FinanceList from "./pages/finance/FinanceList";
+import FinanceCreate from "./pages/finance/FinanceCreate";
+import PayrollManagement from "./pages/finance/PayrollManagement";
+import UserManagement from "./pages/users/UserManagement";
+
+// Broadcaster Pages
+import BroadcasterProjectList from "./pages/broadcaster/BroadcasterProjectList";
+import BroadcasterProjectDetail from "./pages/broadcaster/BroadcasterProjectDetail";
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles = [] }) {
@@ -26,7 +32,7 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4"></i>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-ocean-500 mb-4"></i>
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>
@@ -52,7 +58,7 @@ function PublicRoute({ children }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4"></i>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-ocean-500 mb-4"></i>
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>
@@ -71,19 +77,23 @@ function DashboardRouter() {
   const { user } = useAuth();
 
   // Route to appropriate dashboard based on role
-  if (user?.role === 'admin' || user?.role === 'producer') {
+  if (user?.role === "admin") {
     return <AdminDashboard />;
   }
 
-  if (user?.role === 'crew') {
+  if (user?.role === "producer") {
+    return <ProducerDashboard />;
+  }
+
+  if (user?.role === "crew") {
     return <CrewDashboard />;
   }
 
-  if (user?.role === 'broadcaster') {
+  if (user?.role === "broadcaster") {
     return <BroadcasterDashboard />;
   }
 
-  if (user?.role === 'investor') {
+  if (user?.role === "investor") {
     return <InvestorDashboard />;
   }
 
@@ -94,7 +104,8 @@ function DashboardRouter() {
       </h1>
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
         <p className="text-gray-600">
-          Dashboard for <span className="font-bold capitalize">{user?.role}</span> role
+          Dashboard for{" "}
+          <span className="font-bold capitalize">{user?.role}</span> role
         </p>
       </div>
     </div>
@@ -110,19 +121,19 @@ function App() {
           toastOptions={{
             duration: 3000,
             style: {
-              background: '#363636',
-              color: '#fff',
+              background: "#363636",
+              color: "#fff",
             },
             success: {
               iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
+                primary: "#10b981",
+                secondary: "#fff",
               },
             },
             error: {
               iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
+                primary: "#ef4444",
+                secondary: "#fff",
               },
             },
           }}
@@ -149,14 +160,14 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/dashboard" replace />} />
-            
+
             <Route path="dashboard" element={<DashboardRouter />} />
 
             {/* Projects Routes (Admin & Producer only) */}
             <Route
               path="projects"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <ProjectList />
                 </ProtectedRoute>
               }
@@ -164,7 +175,7 @@ function App() {
             <Route
               path="projects/create"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <ProjectCreate />
                 </ProtectedRoute>
               }
@@ -172,7 +183,7 @@ function App() {
             <Route
               path="projects/:id"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <ProjectDetail />
                 </ProtectedRoute>
               }
@@ -180,7 +191,7 @@ function App() {
             <Route
               path="projects/:id/edit"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <ProjectEdit />
                 </ProtectedRoute>
               }
@@ -189,7 +200,7 @@ function App() {
             <Route
               path="users"
               element={
-                <ProtectedRoute allowedRoles={['admin']}>
+                <ProtectedRoute allowedRoles={["admin"]}>
                   <UserManagement />
                 </ProtectedRoute>
               }
@@ -198,7 +209,7 @@ function App() {
             <Route
               path="finance"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <FinanceList />
                 </ProtectedRoute>
               }
@@ -206,7 +217,7 @@ function App() {
             <Route
               path="finance/create"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <FinanceCreate />
                 </ProtectedRoute>
               }
@@ -214,8 +225,36 @@ function App() {
             <Route
               path="finance/payroll"
               element={
-                <ProtectedRoute allowedRoles={['admin', 'producer']}>
+                <ProtectedRoute allowedRoles={["admin", "producer"]}>
                   <PayrollManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Broadcaster Routes */}
+            <Route
+              path="broadcaster/projects"
+              element={
+                <ProtectedRoute allowedRoles={["broadcaster"]}>
+                  <BroadcasterProjectList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="broadcaster/projects/:id"
+              element={
+                <ProtectedRoute allowedRoles={["broadcaster"]}>
+                  <BroadcasterProjectDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Profile */}
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

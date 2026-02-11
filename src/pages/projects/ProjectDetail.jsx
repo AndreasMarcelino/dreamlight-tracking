@@ -8,6 +8,7 @@ import {
 } from "../../utils/formatters";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { useAuth } from "../../context/AuthContext";
 
 // ✨ NEW: Import all new components
 import EpisodeModal from "../../components/modals/EpisodeModal";
@@ -15,10 +16,12 @@ import MilestoneAssignModal from "../../components/modals/MilestoneAssignModal";
 import FileUpload from "../../components/uploads/FileUpload";
 import CrewAssignmentManager from "../../components/project/CrewAssignmentManager";
 import api from "../../services/api";
+import { producerService } from "../../services/producerService";
 
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Data state
   const [project, setProject] = useState(null);
@@ -51,10 +54,10 @@ export default function ProjectDetail() {
   };
 
   useEffect(() => {
-    if (user?.role === "admin") {
+    if (user?.role === "admin" || user?.role === "producer") {
       fetchCrewCount();
     }
-  }, [id]);
+  }, [id, user]);
 
   const fetchCrewCount = async () => {
     try {
@@ -133,6 +136,76 @@ export default function ProjectDetail() {
     }
   };
 
+  // ✨ NEW: Approve/Reject task handlers
+  const handleApproveTask = async (milestone) => {
+    const result = await Swal.fire({
+      title: "Approve Task?",
+      html: `
+        <div class="text-left">
+          <p><strong>Task:</strong> ${milestone.task_name}</p>
+          <p><strong>Crew:</strong> ${milestone.user?.name || "Unknown"}</p>
+          <p><strong>Honor:</strong> ${formatRupiah(milestone.honor_amount)}</p>
+        </div>
+      `,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, Approve",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await producerService.approveTask(milestone.id);
+        toast.success(`Task "${milestone.task_name}" approved!`);
+        fetchProject();
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to approve task");
+      }
+    }
+  };
+
+  const handleRejectTask = async (milestone) => {
+    const { value: reason } = await Swal.fire({
+      title: "Reject Task?",
+      html: `
+        <div class="text-left mb-4">
+          <p><strong>Task:</strong> ${milestone.task_name}</p>
+          <p><strong>Crew:</strong> ${milestone.user?.name || "Unknown"}</p>
+        </div>
+      `,
+      input: "textarea",
+      inputLabel: "Reason for rejection",
+      inputPlaceholder: "Please provide feedback for the crew...",
+      inputAttributes: {
+        "aria-label": "Reason for rejection",
+      },
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Reject Task",
+      cancelButtonText: "Cancel",
+      inputValidator: (value) => {
+        if (!value || value.trim().length < 10) {
+          return "Please provide a detailed reason (min 10 characters)";
+        }
+      },
+    });
+
+    if (reason) {
+      try {
+        await producerService.rejectTask(milestone.id, reason);
+        toast.success(
+          `Task "${milestone.task_name}" rejected. Crew will be notified.`,
+        );
+        fetchProject();
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Failed to reject task");
+      }
+    }
+  };
+
   // ✨ NEW: File upload handler
   const handleFileUploaded = (uploadedFile) => {
     toast.success(`${uploadedFile.file_name} uploaded successfully!`);
@@ -186,7 +259,7 @@ export default function ProjectDetail() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-indigo-600 mb-4"></i>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-ocean-500 mb-4"></i>
           <p className="text-gray-500">Loading project...</p>
         </div>
       </div>
@@ -200,7 +273,7 @@ export default function ProjectDetail() {
         <h3 className="text-xl font-bold text-gray-600 mb-2">
           Project Not Found
         </h3>
-        <Link to="/projects" className="text-indigo-600 hover:underline">
+        <Link to="/projects" className="text-ocean-500 hover:underline">
           Back to Projects
         </Link>
       </div>
@@ -247,7 +320,7 @@ export default function ProjectDetail() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Hero Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 rounded-3xl p-8 shadow-2xl">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-ocean-900 to-slate-900 rounded-3xl p-8 shadow-2xl">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
 
         <div className="relative z-10">
@@ -276,23 +349,23 @@ export default function ProjectDetail() {
                 {project.title}
               </h1>
 
-              <p className="text-purple-200 text-lg mb-6 max-w-3xl">
+              <p className="text-sky-200 text-lg mb-6 max-w-3xl">
                 {project.description || "No description available"}
               </p>
 
               <div className="flex flex-wrap gap-6 text-sm">
-                <div className="flex items-center gap-2 text-purple-200">
+                <div className="flex items-center gap-2 text-sky-200">
                   <i className="fa-solid fa-building"></i>
                   <span>{project.client_name || "Internal"}</span>
                 </div>
-                <div className="flex items-center gap-2 text-purple-200">
+                <div className="flex items-center gap-2 text-sky-200">
                   <i className="fa-solid fa-calendar-days"></i>
                   <span>
                     {formatDateShort(project.start_date)} -{" "}
                     {formatDateShort(project.deadline_date)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-purple-200">
+                <div className="flex items-center gap-2 text-sky-200">
                   <i className="fa-solid fa-wallet"></i>
                   <span>{formatRupiah(project.total_budget_plan)}</span>
                 </div>
@@ -310,8 +383,8 @@ export default function ProjectDetail() {
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute -right-20 -top-20 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute -right-20 -top-20 w-96 h-96 bg-ocean-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl"></div>
       </div>
 
       {/* Progress Bars */}
@@ -333,7 +406,7 @@ export default function ProjectDetail() {
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   phase === "Pre-Production"
-                    ? "bg-gradient-to-r from-indigo-400 to-indigo-600"
+                    ? "bg-gradient-to-r from-ocean-400 to-ocean-600"
                     : phase === "Production"
                       ? "bg-gradient-to-r from-orange-400 to-orange-600"
                       : "bg-gradient-to-r from-blue-400 to-blue-600"
@@ -354,7 +427,7 @@ export default function ProjectDetail() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
                 activeTab === tab.id
-                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200"
+                  ? "bg-gradient-to-r from-ocean-500 to-ocean-600 text-white shadow-lg shadow-ocean-200"
                   : "text-gray-500 hover:bg-gray-50"
               }`}
             >
@@ -389,9 +462,12 @@ export default function ProjectDetail() {
         {activeTab === "crew" && (
           <CrewTab
             project={project}
+            user={user}
             onAssignCrew={handleAssignCrew}
             onEditMilestone={handleEditMilestone}
             onDeleteMilestone={handleDeleteMilestone}
+            onApproveTask={handleApproveTask}
+            onRejectTask={handleRejectTask}
           />
         )}
         {activeTab === "episodes" && (
@@ -461,7 +537,7 @@ function OverviewTab({ project }) {
         {/* Project Description */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <i className="fa-solid fa-align-left text-indigo-600"></i>
+            <i className="fa-solid fa-align-left text-ocean-500"></i>
             Project Description
           </h3>
           <p className="text-gray-600 leading-relaxed">
@@ -473,7 +549,7 @@ function OverviewTab({ project }) {
         {/* Timeline */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <i className="fa-solid fa-calendar-days text-indigo-600"></i>
+            <i className="fa-solid fa-calendar-days text-ocean-500"></i>
             Timeline
           </h3>
           <div className="space-y-4">
@@ -553,23 +629,30 @@ function OverviewTab({ project }) {
 // ✨ NEW: Crew Tab with full integration
 function CrewTab({
   project,
+  user,
   onAssignCrew,
   onEditMilestone,
   onDeleteMilestone,
+  onApproveTask,
+  onRejectTask,
 }) {
+  const canApprove = user?.role === "admin" || user?.role === "producer";
+
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-bold text-gray-800">
           Team Members & Tasks
         </h3>
-        <button
-          onClick={onAssignCrew}
-          className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2"
-        >
-          <i className="fa-solid fa-user-plus"></i>
-          Assign Crew
-        </button>
+        {canApprove && (
+          <button
+            onClick={onAssignCrew}
+            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2"
+          >
+            <i className="fa-solid fa-user-plus"></i>
+            Assign Crew
+          </button>
+        )}
       </div>
 
       {project.milestones && project.milestones.length > 0 ? (
@@ -577,7 +660,11 @@ function CrewTab({
           {project.milestones.map((milestone) => (
             <div
               key={milestone.id}
-              className="p-5 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition group"
+              className={`p-5 border-2 rounded-xl transition group ${
+                milestone.work_status === "Waiting Approval"
+                  ? "border-orange-300 bg-orange-50/50"
+                  : "border-gray-200 hover:border-orange-300"
+              }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4 flex-1">
@@ -591,7 +678,7 @@ function CrewTab({
                         {milestone.user?.name || "Unknown"}
                       </p>
                       {milestone.episode && (
-                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded">
+                        <span className="px-2 py-0.5 bg-sky-100 text-ocean-600 text-xs font-bold rounded">
                           Ep {milestone.episode.episode_number}
                         </span>
                       )}
@@ -618,22 +705,48 @@ function CrewTab({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => onEditMilestone(milestone)}
-                    className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition"
-                    title="Edit"
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                  <button
-                    onClick={() =>
-                      onDeleteMilestone(milestone.id, milestone.user?.name)
-                    }
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                    title="Remove"
-                  >
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
+                  {/* Approve/Reject buttons for Waiting Approval tasks */}
+                  {canApprove &&
+                    milestone.work_status === "Waiting Approval" && (
+                      <>
+                        <button
+                          onClick={() => onApproveTask(milestone)}
+                          className="px-3 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg transition text-sm font-semibold flex items-center gap-1"
+                          title="Approve Task"
+                        >
+                          <i className="fa-solid fa-check"></i>
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => onRejectTask(milestone)}
+                          className="px-3 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition text-sm font-semibold flex items-center gap-1"
+                          title="Reject Task"
+                        >
+                          <i className="fa-solid fa-xmark"></i>
+                          Reject
+                        </button>
+                      </>
+                    )}
+                  {canApprove && (
+                    <>
+                      <button
+                        onClick={() => onEditMilestone(milestone)}
+                        className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition"
+                        title="Edit"
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button
+                        onClick={() =>
+                          onDeleteMilestone(milestone.id, milestone.user?.name)
+                        }
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Remove"
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -663,7 +776,7 @@ function EpisodesTab({
         <h3 className="text-lg font-bold text-gray-800">Episodes</h3>
         <button
           onClick={onAddEpisode}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-purple-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2"
+          className="bg-gradient-to-r from-ocean-600 to-pink-600 hover:from-ocean-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-sky-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2"
         >
           <i className="fa-solid fa-plus"></i>
           Add Episode
@@ -675,7 +788,7 @@ function EpisodesTab({
           {project.episodes.map((episode) => (
             <div
               key={episode.id}
-              className="p-5 border-2 border-gray-200 rounded-xl hover:border-purple-300 transition group relative"
+              className="p-5 border-2 border-gray-200 rounded-xl hover:border-ocean-300 transition group relative"
             >
               <div className="flex items-center justify-between mb-3">
                 <span className="text-3xl font-bold text-gray-800">
@@ -706,7 +819,7 @@ function EpisodesTab({
               <div className="flex gap-2 pt-3 border-t border-gray-100">
                 <button
                   onClick={() => onEditEpisode(episode)}
-                  className="flex-1 px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg text-xs font-semibold transition"
+                  className="flex-1 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-ocean-600 rounded-lg text-xs font-semibold transition"
                 >
                   <i className="fa-solid fa-pen mr-1"></i>
                   Edit
@@ -743,7 +856,7 @@ function FilesTab({ project, onFileUploaded, onDownloadFile, onDeleteFile }) {
       {/* Upload Section */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <i className="fa-solid fa-cloud-arrow-up text-indigo-600"></i>
+          <i className="fa-solid fa-cloud-arrow-up text-ocean-500"></i>
           Upload New File
         </h3>
 
@@ -765,7 +878,7 @@ function FilesTab({ project, onFileUploaded, onDownloadFile, onDeleteFile }) {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${
                   selectedCategory === cat
-                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200"
+                    ? "bg-gradient-to-r from-ocean-500 to-ocean-600 text-white shadow-lg shadow-ocean-200"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -802,7 +915,7 @@ function FilesTab({ project, onFileUploaded, onDownloadFile, onDeleteFile }) {
             {project.assets.map((asset) => (
               <div
                 key={asset.id}
-                className="p-4 border border-gray-200 rounded-xl hover:border-indigo-300 transition group flex items-center gap-4"
+                className="p-4 border border-gray-200 rounded-xl hover:border-ocean-300 transition group flex items-center gap-4"
               >
                 {/* File Icon */}
                 <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
@@ -845,7 +958,7 @@ function FilesTab({ project, onFileUploaded, onDownloadFile, onDeleteFile }) {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => onDownloadFile(asset.id, asset.file_name)}
-                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                    className="p-2 text-gray-400 hover:text-ocean-500 hover:bg-sky-50 rounded-lg transition"
                     title="Download"
                   >
                     <i className="fa-solid fa-download"></i>
@@ -915,7 +1028,7 @@ function FinanceTab({ project }) {
             {project.finances.slice(0, 10).map((finance) => (
               <div
                 key={finance.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-indigo-300 transition"
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-xl hover:border-ocean-300 transition"
               >
                 <div className="flex items-center gap-4">
                   <div

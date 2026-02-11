@@ -7,6 +7,7 @@ import {
 } from "../../utils/formatters";
 import { producerService } from "../../services/producerService";
 import TaskApprovalPanel from "../../components/producer/TaskApprovalPanel";
+import AssignedCrewPanel from "../../components/producer/AssignedCrewPanel";
 import toast from "react-hot-toast";
 
 export default function ProducerDashboard() {
@@ -19,6 +20,7 @@ export default function ProducerDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [showApprovalPanel, setShowApprovalPanel] = useState(false);
+  const [showCrewPanel, setShowCrewPanel] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -40,7 +42,7 @@ export default function ProducerDashboard() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-purple-600 mb-4"></i>
+          <i className="fa-solid fa-circle-notch fa-spin text-4xl text-ocean-600 mb-4"></i>
           <p className="text-gray-500">Loading dashboard...</p>
         </div>
       </div>
@@ -52,10 +54,10 @@ export default function ProducerDashboard() {
       title: "My Projects",
       value: stats.totalProjects,
       icon: "fa-video",
-      gradient: "from-purple-400 to-purple-600",
-      bgColor: "bg-purple-50",
-      textColor: "text-purple-600",
-      onClick: null,
+      gradient: "from-ocean-400 to-ocean-600",
+      bgColor: "bg-sky-50",
+      textColor: "text-ocean-600",
+      link: "/projects",
     },
     {
       title: "Pending Approvals",
@@ -74,7 +76,7 @@ export default function ProducerDashboard() {
       gradient: "from-emerald-400 to-emerald-600",
       bgColor: "bg-emerald-50",
       textColor: "text-emerald-600",
-      onClick: null,
+      onClick: () => setShowCrewPanel(true),
     },
     {
       title: "Pending Payroll",
@@ -90,13 +92,13 @@ export default function ProducerDashboard() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 rounded-3xl p-8 shadow-2xl">
+      <div className="relative overflow-hidden bg-gradient-to-br from-ocean-600 via-ocean-500 to-blue-600 rounded-3xl p-8 shadow-2xl">
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
               Welcome, Producer! 🎬
             </h1>
-            <p className="text-purple-100 text-lg">
+            <p className="text-sky-100 text-lg">
               Manage your projects and crew tasks
             </p>
           </div>
@@ -173,7 +175,7 @@ export default function ProducerDashboard() {
             </div>
             <Link
               to="/projects"
-              className="text-purple-600 hover:text-purple-700 font-semibold text-sm flex items-center gap-2 group"
+              className="text-ocean-600 hover:text-ocean-600 font-semibold text-sm flex items-center gap-2 group"
             >
               View All
               <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
@@ -215,8 +217,8 @@ export default function ProducerDashboard() {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                            <i className="fa-solid fa-film text-purple-600"></i>
+                          <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center">
+                            <i className="fa-solid fa-film text-ocean-600"></i>
                           </div>
                           <div>
                             <p className="font-bold text-gray-800">
@@ -232,7 +234,7 @@ export default function ProducerDashboard() {
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold ${
                             project.type === "Series"
-                              ? "bg-indigo-100 text-indigo-700"
+                              ? "bg-sky-100 text-ocean-600"
                               : "bg-emerald-100 text-emerald-700"
                           }`}
                         >
@@ -253,7 +255,7 @@ export default function ProducerDashboard() {
                         <div className="flex items-center gap-3">
                           <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all"
+                              className="h-full bg-gradient-to-r from-ocean-500 to-ocean-500 rounded-full transition-all"
                               style={{ width: `${avgProgress}%` }}
                             ></div>
                           </div>
@@ -265,7 +267,7 @@ export default function ProducerDashboard() {
                       <td className="px-6 py-4 text-right">
                         <Link
                           to={`/projects/${project.id}`}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-semibold text-sm transition"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-sky-100 hover:bg-sky-200 text-ocean-600 rounded-lg font-semibold text-sm transition"
                         >
                           <i className="fa-solid fa-eye"></i>
                           View
@@ -298,6 +300,14 @@ export default function ProducerDashboard() {
           isOpen={showApprovalPanel}
           onClose={() => setShowApprovalPanel(false)}
           onApprovalComplete={fetchDashboardData}
+        />
+      )}
+
+      {/* Assigned Crew Panel Modal */}
+      {showCrewPanel && (
+        <AssignedCrewPanel
+          isOpen={showCrewPanel}
+          onClose={() => setShowCrewPanel(false)}
         />
       )}
     </div>

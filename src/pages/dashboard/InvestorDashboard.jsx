@@ -202,7 +202,7 @@ export default function InvestorDashboard() {
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden w-24">
                           <div 
-                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+                            className="h-full bg-gradient-to-r from-blue-500 to-ocean-500 rounded-full"
                             style={{ width: `${project.production_progress}%` }}
                           />
                         </div>
@@ -236,7 +236,7 @@ export default function InvestorDashboard() {
 
       {/* Key Insights */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-br from-blue-500 to-ocean-500 rounded-2xl p-6 text-white">
           <i className="fa-solid fa-lightbulb text-3xl mb-4 opacity-80"></i>
           <h3 className="text-lg font-bold mb-2">Portfolio Health</h3>
           <p className="text-sm text-blue-100">
@@ -246,11 +246,11 @@ export default function InvestorDashboard() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-br from-ocean-500 to-pink-600 rounded-2xl p-6 text-white">
           <i className="fa-solid fa-chart-pie text-3xl mb-4 opacity-80"></i>
           <h3 className="text-lg font-bold mb-2">Total Projects</h3>
           <p className="text-3xl font-bold">{data.projectStats.length}</p>
-          <p className="text-sm text-purple-100 mt-1">Active investments</p>
+          <p className="text-sm text-sky-100 mt-1">Active investments</p>
         </div>
 
         <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-6 text-white">
